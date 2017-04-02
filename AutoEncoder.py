@@ -4,9 +4,6 @@ import graphics as g
 def sigmoid(x):
     return 1/(1+math.exp(-x))
 
-def max(x):
-    
-
 class Vector:
     def __init__(self, *args):
         self.value = list(args)
@@ -57,21 +54,25 @@ class Neuron:
         return string(self.value)
 
 class Layer:
-    def __init__(self, nodes):
-        # self.neurons = [Neuron() for i in xrange(nodes)]
-        self.neurons = Vector(*[0 for i in xrange(nodes)])
-        self.weights = Vector(*[0 for i in xrange(nodes)])
-        self.bias = Vector(*[0 for i in xrange(nodes)])
+    def __init__(self, nodes, weights=None):
+        if(weights is None):
+            weights = nodes
+        # self.neurons = [Neuron() for i in range(nodes)]
+        self.neurons = Vector(*[0 for i in range(nodes)])
+        self.weights = Vector(*[0 for i in range(weights)])
+        print(self.weights)
+        self.bias = Vector(*[0 for i in range(nodes)])
 
     def __str__(self):
         return str(self.neurons)
 
 class AutoEncoder:
     def __init__(self, inputNodes, hiddenLayers, outputNodes):
-        self.layers = [Layer(inputNodes)]
-        for i in hiddenLayers:
-            self.layers.append(Layer(i))
-        self.layers.append(Layer(outputNodes))
+        self.layers = [Layer(inputNodes, 0)]
+        t = [inputNodes,*hiddenLayers, outputNodes]
+        for i in range(len(hiddenLayers)):
+            self.layers.append(Layer(hiddenLayers[i], t[i]))
+        self.layers.append(Layer(outputNodes, t[-2]))
 
     def cost(self, target):
         pass
@@ -80,28 +81,32 @@ class AutoEncoder:
         for i in range(1, len(self.layers)):
             layer = self.layers[i]
             prevLayer = self.layers[i-1]
-            # print(layer)
-            # print(layer.weights)
 
     def draw(self, surface, color=(0,0,0)):
         w,h = surface.get_size()
-        y_padding = 10
-        for i in range(len(self.layers)):
-            # print(len(self.layers[i].neurons))
+        y_pad = 10
+        x_pad = 10
+        x_delta = (w-(2*x_pad))/len(self.layers)
+        x = x_delta/2
+        layers_size = len(self.layers)
+        for i in range(layers_size):
             layer = self.layers[i]
-            y = y_padding
-            delta = (h-y_padding-50)/len(layer.neurons)
-            print(delta)
+            y_delta = (h-(y_pad*2))/len(layer.neurons)
+            y = y_pad+(y_delta/2)
             for j in range(len(layer.neurons)):
-                y+=delta
-                g.circle((20, y), 20, color)
-        g.circle((w/2, h/2), 20, color)
+                for k in range(len(layer.weights)):
+                    prevLayer = self.layers[i-1]
+                    temp_y_delta = (h-(y_pad*2))/len(layer.weights)
+                    g.line((x,y), (x-x_delta,y_pad+(temp_y_delta/2)+(temp_y_delta*k)), color)
+                g.circle((x, y), min(20, y_delta-(y_pad*2)), color)
+                y+=y_delta
+            x += x_delta
 
 
-nn = AutoEncoder(10,[2],10) #10 input, 1 hidden layer with 2 nodes, 10 output
+nn = AutoEncoder(4,[3,2,3],4) #10 input, 1 hidden layer with 2 nodes, 10 output
 nn.feedForward()
 
-screen = g.init(450,450, "Ayy lmao")
+screen = g.init(750,750, "NN.py")
 while(g.hEvents()):
     g.begin()
 
