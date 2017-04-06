@@ -4,6 +4,11 @@ import graphics as g
 def sigmoid(x):
     return 1/(1+math.exp(-x))
 
+def printMatrix(m):
+    m = m.value
+    for i in range(len(m)):
+        print(m[i].value)
+
 class Neuron:
     def __init__(self):
         self.value = 0
@@ -29,49 +34,92 @@ class Vector:
         return value
 
     def __imul__(self, other):
-        t = other.__class__.__name__
-        if(t == "Vector"):
+        t = type(other)
+        if(t == Vector):
             for i in range(len(self.value)):
                 self.value[i] *= other.value[i]
             return self
-        elif(t == "int"):
+        elif(t == int or t == float):
             for i in range(len(self.value)):
                 self.value[i] *= other
             return self
 
     def __mul__(self, other):
-        t = other.__class__.__name__
+        t = type(other)
         j = copy.deepcopy(self)
-        if(t == "Vector"):
+        if((t == list and other[0] and (type(other[0]) == int or type(other[0]) == float)) or t == tuple):
+            other = Vector(*other)
+            t = type(other)
+        elif(t == list and other[0] and (type(other[0]) == list or type(other[0]) == tuple)):  #return an array of vectors
+            m = []
+            for i in range(len(other)):
+                # print(self * other[i])
+                m.append(self * other[i])
+            return m
+
+        if(t == Vector):
             for i in range(len(j.value)):
                 j.value[i] *= other.value[i]
             return j
-        elif(t == "int"):
+        elif(t == int or t == float):
             for i in range(len(j.value)):
                 j.value[i] *= other
             return j
+        elif(t == Matrix):
+            length = len(other.value)
+            if(length == 0):
+                oLength = 0
+            else:
+                oLength = len(other.value[0])
+            m = Matrix(oLength,length)
+            for i in range(len(other.value)):
+                m.set(i, other.value[i] * self.value[i])
+            return m
 
     def __iadd__(self, other):
-        t = other.__class__.__name__
-        if(t == "Vector"):
+        t = type(other)
+        if(t == Vector):
             for i in range(len(self.value)):
                 self.value[i] += other.value[i]
             return self
-        elif(t == "int"):
+        elif(t == int):
             for i in range(len(self.value)):
                 self.value[i] += other
             return self
 
     def __add__(self, other):
-        t = other.__class__.__name__
+        t = type(other)
         j = copy.deepcopy(self)
-        if(t == "Vector"):
+        if(t == Vector):
             for i in range(len(j.value)):
                 j.value[i] += other.value[i]
             return j
-        elif(t == "int"):
+        elif(t == int):
             for i in range(len(j.value)):
                 j.value[i] += other
+            return j
+
+    def __isub__(self, other):
+        t = type(other)
+        if(t == Vector):
+            for i in range(len(self.value)):
+                self.value[i] -= other.value[i]
+            return self
+        elif(t == int):
+            for i in range(len(self.value)):
+                self.value[i] -= other
+            return self
+
+    def __sub__(self, other):
+        t = type(other)
+        j = copy.deepcopy(self)
+        if(t == Vector):
+            for i in range(len(j.value)):
+                j.value[i] -= other.value[i]
+            return j
+        elif(t == int):
+            for i in range(len(j.value)):
+                j.value[i] -= other
             return j
 
     def __str__(self):
@@ -83,15 +131,65 @@ class Vector:
     def __getitem__(self, key):
         return self.value[key]
 
+# def transpose(layer):
+    # return list(zip(*[x.value for x in layer.weights]))
+
+class Matrix:
+    def __init__(self, listOrxSize, ySize=None):
+        t = type(listOrxSize)
+        self.value = []
+        if(t == list):
+            t = type(listOrxSize[0])
+            if(t == list):
+                for i in range(len(listOrxSize)): #TODO: fix this up
+                    self.value.append(Vector(*listOrxSize[i]))
+            elif(t == Vector):
+                self.value = listOrxSize
+        elif(t == int):
+            self.value = [Vector(*[0]*listOrxSize) for i in range(ySize)]
+
+    def transpose(self):
+        return Matrix(list(zip(*[x.value for x in self.value])))
+
+    def set(self, j, value):
+        self.value[j] = value
+
+    def __str__(self):
+        for i in range(len(self.value)):
+            print(self.value[i])
+        return ""
+
+    def __mul__(self, other):
+        t = type(other)
+        if(t == Vector):
+            m = Matrix(len(self.value[0]),len(self.value))
+            for i in range(len(self.value)):
+                m.set(i, self.value[i] * other[i])
+            return m
+
+    def __getitem__(self, key):
+        return self.value[key]
+
+m = Matrix(6,4)
+m.set(0, Vector(1,1,1,0,0,1))
+m.set(1, Vector(3,1,1,2,2,1))
+
+print(Matrix([[1,0],[0,1]]))
+# print(m)
+# print("ay")
+# print(Vector(2,2,2,2,2,2) * m)
+# print("transpose")
+# print(m.transpose())
+
 class Layer:
     def __init__(self, nodes, weights=None, bias=1):
         if(weights is None):
             weights = 0
         self.neurons = Vector(*[1 for i in range(nodes)])
-        self.weights = []
+        self.weights = Matrix(weights,nodes)
         for i in range(nodes):
-            self.weights.append(Vector(*[random.random() for i in range(weights)]))
-        self.bias = Vector(*[1 for i in range(nodes)])
+            self.weights.set(i, Vector(*[random.random() for i in range(weights)]))
+        self.bias = Vector(*[random.random() for i in range(nodes)])
 
     def __str__(self):
         return str(self.neurons)
@@ -103,21 +201,42 @@ class AutoEncoder:
         for i in range(len(hiddenLayers)):
             self.layers.append(Layer(hiddenLayers[i], t[i])) #num of nodes, num of prev nodes
         self.layers.append(Layer(outputNodes, t[-2]))
+        self.error = 99999999
 
     def cost(self, target):
-        pass
+        output = self.layers[-1].neurons
+        t = type(target)
+        if(type(target) == list):
+            target = Vector(*target)
+        self.error = sum((target-output).apply(lambda x:x**2))/2
+        return self.error
 
     def feedForward(self):
-        print(self.layers[0].neurons)
+        # print(self.layers[0].neurons)
         for i in range(1, len(self.layers)):
             layer = self.layers[i]
             prevLayer = self.layers[i-1]
             for j in range(len(layer.neurons)):
                 layer.neurons.set(j, sum((prevLayer.neurons*layer.weights[j]).value))
-            layer.neurons = layer.neurons.apply(sigmoid)
-            print(layer.neurons)
             layer.neurons += layer.bias
-            print(layer.neurons)
+            layer.neurons = layer.neurons.apply(sigmoid)
+
+    def backprop(self, target):
+        if(type(target) == list):
+            target = Vector(*target)
+        output = self.layers[-1].neurons
+        out_sig = output.sigmoid()
+        output_error = out_sig * ((out_sig*-1) + 1)
+        err = output_error * (target-output)
+        #output layer done
+
+        currentLayer = self.layers[-2]
+        prevLayer = self.layers[-1]
+        w = prevLayer.weights
+        t = prevLayer.weights.transpose()
+        printMatrix(err * t)
+        print(type(err*t))
+        # currentLayer.weights = err * t
 
     def draw(self, surface, color=(0,0,0)):
         w,h = surface.get_size()
@@ -141,6 +260,8 @@ class AutoEncoder:
 
 nn = AutoEncoder(3,[5,5],3) #10 input, 1 hidden layer with 2 nodes, 10 output
 nn.feedForward()
+print("cost:",nn.cost([1,2,2]))
+nn.backprop([1,2,2])
 
 screen = g.init(700,350, "NN.py")
 while(g.hEvents()):
