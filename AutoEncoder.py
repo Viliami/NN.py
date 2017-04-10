@@ -138,7 +138,6 @@ class Matrix:
             self.value = [Vector(*[0]*listOrxSize) for i in range(ySize)]
 
     def transpose(self):
-        print("abc",Matrix(list(zip([x.value for x in self.value]))))
         return Matrix(list(zip(*[x.value for x in self.value])))
 
     def set(self, j, value):
@@ -165,6 +164,8 @@ class Layer:
         if(weights is None):
             weights = 0
         self.neurons = Vector(*[1 for i in range(nodes)])
+        self.neurons = Matrix(1,nodes)
+        print("n",self.neurons)
         self.weights = Matrix(weights,nodes)
         for i in range(nodes):
             self.weights.set(i, Vector(*[random.random() for i in range(weights)]))
@@ -172,6 +173,8 @@ class Layer:
 
     def __str__(self):
         return str(self.neurons)
+
+print("matrix",Matrix(1,5))
 
 class AutoEncoder:
     def __init__(self, inputNodes, hiddenLayers, outputNodes):
@@ -206,18 +209,27 @@ class AutoEncoder:
         output = self.layers[-1].neurons
         out_sig = output.sigmoid()
         output_error = out_sig * ((out_sig*-1) + 1)
-        cost_derivative = (target - output)
-        err = cost_derivative * output_error
+        cost_derivative = (output - target)
+        err = (output - target) * output_error
+        print("out:",output)
+        print("target:",target)
+        print(err)
         #output layer done
 
         currentLayer = self.layers[-2]
         prevLayer = self.layers[-1]
         w = prevLayer.weights
+        print("w",w)
         t = prevLayer.weights.transpose()
-        # printMatrix(err * t)
-        print(err*t)
-        print(prevLayer.neurons)
-        # currentLayer.weights = err * t
+        print("t",t)
+        print("err",err)
+        print("err*t",err*t)
+        print(t)
+        print("neurons")
+        print(currentLayer.neurons)
+
+        # for i in range(len(self.layers)-1, 0, -1):
+        #     print(i)
 
     def draw(self, surface, color=(0,0,0)):
         w,h = surface.get_size()
