@@ -274,34 +274,32 @@ class AutoEncoder:
         self.error = sum((target-output).apply(lambda x:x**2))/2
         return self.error
 
+    def activation(self, x):
+        return sigmoid(x)
+
     def activationPrime(self, x): #currently sigmoid prime function
-        return x.apply(sigmoidPrime)
-        # return sig*(sig*-1 + 1) #sig * (1 - sig)
+        return sigmoidPrime(x)
 
     def feedForward(self):
-        # print(self.layers[0].neurons)
         for i in range(1, len(self.layers)):
             layer = self.layers[i]
             prevLayer = self.layers[i-1]
             for j in range(len(layer.neurons.value)):
                 layer.neurons.set(j, sum(prevLayer.neurons*layer.weights[j]))
             layer.neurons += layer.bias
-            layer.neurons = layer.neurons.apply(sigmoid)
+            layer.neurons = layer.neurons.apply(self.activation)
 
     def backprop(self, target):
         if(type(target) == list):
             target = Vector(*target)
         output = self.layers[-1].neurons
-        out_sig = output.apply(sigmoid)
-        output_error = out_sig * ((out_sig*-1) + 1)
         cost_derivative = (output - target)
-        err = (output - target) * output_error
+        error = [cost_derivative * output.apply(sigmoidPrime)]
 
-        error = [err]
         for i in range(len(self.layers)-2, 0, -1):
             nextLayer = self.layers[i+1]
             currentLayer = self.layers[i]
-            error.append((nextLayer.weights.transpose()*error[-1])*self.activationPrime(currentLayer.neurons))
+            error.append((nextLayer.weights.transpose()*error[-1])*currentLayer.neurons.apply(self.activationPrime))
 
         for i in range(1,len(self.layers)):
             layer = self.layers[i]
@@ -332,7 +330,7 @@ class AutoEncoder:
                 y+=y_delta
             x += x_delta
 
-target = [0.5,0.3]
+target = [2.5,0.3]
 nn = AutoEncoder(3,[2],2) #10 input, 2 hidden layer with 2 nodes, 10 output
 nn.feedForward()
 samples = 500
