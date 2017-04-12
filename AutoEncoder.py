@@ -266,6 +266,19 @@ class AutoEncoder:
         self.error = 99999999
         self.learningRate = 0.5
 
+    def setActivation(self, name): #returns True if activation exists else False
+        name = name.lower()
+        if(name == "sigmoid"):
+            self.activation = sigmoid
+            self.activationPrime = sigmoidPrime
+            return True
+        elif(name == "relu"):
+            self.activation = relu
+            self.activationPrime = reluPrime
+            return True
+        else:
+            return False
+
     def cost(self, target):
         output = self.layers[-1].neurons
         t = type(target)
@@ -275,10 +288,12 @@ class AutoEncoder:
         return self.error
 
     def activation(self, x):
-        return sigmoid(x)
+        # return sigmoid(x)
+        return relu(x)
 
     def activationPrime(self, x): #currently sigmoid prime function
-        return sigmoidPrime(x)
+        # return sigmoidPrime(x)
+        return reluPrime(x)
 
     def feedForward(self):
         for i in range(1, len(self.layers)):
@@ -333,6 +348,7 @@ class AutoEncoder:
 target = [2.5,0.3]
 nn = AutoEncoder(3,[2],2) #10 input, 2 hidden layer with 2 nodes, 10 output
 nn.feedForward()
+
 samples = 500
 for i in range(samples):
     nn.backprop(target)
