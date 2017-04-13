@@ -125,7 +125,6 @@ class NN:
                 err.append(self.backprop(targets[i], data[i]))
                 if(not (i+1)%batchSize):
                     c += 1
-                    print("update batch",c)
                     for j in range(len(err[0])):
                         t = 0
                         for i in range(len(err)):
