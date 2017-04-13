@@ -71,6 +71,10 @@ class NN:
     def setInput(self, inputValues):
         self.layers[0].neurons  = Vector(*inputValues)
 
+    def predict(self, inputValues):
+        self.setInput(inputValues)
+        return self.feedForward()
+
     def feedForward(self,inputValues=None):
         if(inputValues):
             self.setInput(inputValues)
@@ -83,6 +87,7 @@ class NN:
                 layer.neurons.set(j, sum(prevLayer.neurons*layer.weights[j]))
             layer.neurons += layer.bias
             layer.neurons = layer.neurons.apply(self.activation)
+        return self.layers[-1].neurons
 
     def backprop(self, target, inputValues):
         self.feedForward(inputValues)
@@ -108,15 +113,15 @@ class NN:
                 for k in range(len(pLayer.weights)):
                     layer.weights[j].set(k, layer.weights[j][k] - self.learningRate * pLayer.neurons[k] * err[j])
 
-    def train(self, data, targets, batchSize=1): #NOTE: if batch does not evenly divide the data then data will be skipped
+    def train(self, data, targets, batchSize=1, debug=False): #NOTE: if batch does not evenly divide the data then data will be skipped
         size = len(data)
         if(batchSize <= 0):
             return
         if(batchSize == 1):
             for i in range(size):
                 self.updateParams(self.backprop(targets[i], data[i]))
-                if(not (i+1)%(size/10)):
-                    print(i+1,self.cost(data[i]))
+                if(not (i+1)%(size/10) and debug):
+                    print(i+1,self.cost(targets[i]))
         else:
             err = []
             error = []
@@ -127,10 +132,12 @@ class NN:
                     c += 1
                     for j in range(len(err[0])):
                         t = 0
-                        for i in range(len(err)):
-                            t = err[i][j]+t
+                        for k in range(len(err)):
+                            t = err[k][j]+t
                         error.append(t/len(err))
                     self.updateParams(error)
+                    if(not (i+1)%(size/10) and debug):
+                        print(i+1,self.cost(targets[i]))
                     err = []
 
     def draw(self, surface, color=(0,0,0)):
