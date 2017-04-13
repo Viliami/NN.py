@@ -69,7 +69,10 @@ class NN:
         return reluPrime(x)
 
     def setInput(self, inputValues):
-        self.layers[0].neurons  = Vector(*inputValues)
+        if(len(self.layers[0].neurons) == len(inputValues)):
+            self.layers[0].neurons  = Vector(*inputValues)
+            return True
+        return False
 
     def predict(self, inputValues):
         self.setInput(inputValues)
@@ -78,8 +81,6 @@ class NN:
     def feedForward(self,inputValues=None):
         if(inputValues):
             self.setInput(inputValues)
-        else:
-            self.setInput([1]*len(self.layers[0].neurons))
         for i in range(1, len(self.layers)):
             layer = self.layers[i]
             prevLayer = self.layers[i-1]
