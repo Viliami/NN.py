@@ -15,6 +15,9 @@ def relu(x):
 def reluPrime(x):
     return int(x > 0)
 
+def average(x):
+    return float(sum(x))/max(len(x),1)
+
 class Layer:
     def __init__(self, nodes, weights=None, bias=1):
         if(weights is None):
@@ -59,15 +62,20 @@ class NN:
         self.error = sum((target-output).apply(lambda x:x**2))/2
         return self.error
 
-    def activation(self, x):
-        # return sigmoid(x)
+    def activation(self, x): #default is ReLU
         return relu(x)
 
-    def activationPrime(self, x): #currently sigmoid prime function
-        # return sigmoidPrime(x)
+    def activationPrime(self, x):
         return reluPrime(x)
 
-    def feedForward(self):
+    def setInput(self, inputValues):
+        self.layers[0].neurons  = Vector(*inputValues)
+
+    def feedForward(self,inputValues=None):
+        if(inputValues):
+            self.setInput(inputValues)
+        else:
+            self.setInput([1]*len(self.layers[0].neurons))
         for i in range(1, len(self.layers)):
             layer = self.layers[i]
             prevLayer = self.layers[i-1]
@@ -76,18 +84,21 @@ class NN:
             layer.neurons += layer.bias
             layer.neurons = layer.neurons.apply(self.activation)
 
-    def backprop(self, target):
+    def backprop(self, target, inputValues):
+        self.feedForward(inputValues)
         if(type(target) == list):
             target = Vector(*target)
         output = self.layers[-1].neurons
         cost_derivative = (output - target)
-        error = [cost_derivative * output.apply(sigmoidPrime)]
+        error = [cost_derivative * output.apply(self.activationPrime)]
 
         for i in range(len(self.layers)-2, 0, -1):
             nextLayer = self.layers[i+1]
             currentLayer = self.layers[i]
             error.append((nextLayer.weights.transpose()*error[-1])*currentLayer.neurons.apply(self.activationPrime))
+        return error
 
+    def updateParams(self, error):
         for i in range(1,len(self.layers)):
             layer = self.layers[i]
             pLayer = self.layers[i-1] #previous layer
@@ -96,6 +107,32 @@ class NN:
                 layer.bias.set(j, layer.bias[j] - self.learningRate * err[j])
                 for k in range(len(pLayer.weights)):
                     layer.weights[j].set(k, layer.weights[j][k] - self.learningRate * pLayer.neurons[k] * err[j])
+
+    def train(self, data, targets, batchSize=1): #NOTE: if batch does not evenly divide the data then data will be skipped
+        size = len(data)
+        if(batchSize <= 0):
+            return
+        if(batchSize == 1):
+            for i in range(size):
+                self.updateParams(self.backprop(targets[i], data[i]))
+                if(not (i+1)%(size/10)):
+                    print(i+1,self.cost(data[i]))
+        else:
+            err = []
+            error = []
+            c = 0
+            for i in range(size):
+                err.append(self.backprop(targets[i], data[i]))
+                if(not (i+1)%batchSize):
+                    c += 1
+                    print("update batch",c)
+                    for j in range(len(err[0])):
+                        t = 0
+                        for i in range(len(err)):
+                            t = err[i][j]+t
+                        error.append(t/len(err))
+                    self.updateParams(error)
+                    err = []
 
     def draw(self, surface, color=(0,0,0)):
         w,h = surface.get_size()
