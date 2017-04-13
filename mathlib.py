@@ -35,9 +35,8 @@ class Vector:
         elif(t == list and other[0] and (type(other[0]) == list or type(other[0]) == tuple)):  #return an array of vectors
             m = []
             for i in range(len(other)):
-                # print(self * other[i])
                 m.append(self * other[i])
-            return m
+            return Vector(*m)
 
         if(t == Vector):
             for i in range(len(j.value)):
@@ -49,6 +48,14 @@ class Vector:
             return j
         elif(t == Matrix):
             return other * self
+
+    def __truediv__(self, other):
+        t = type(other)
+        if(t == int or t == float):
+            j = copy.deepcopy(self)
+            for i in range(len(j.value)):
+                j.value[i] /= other
+            return j
 
     def __iadd__(self, other):
         t = type(other)
