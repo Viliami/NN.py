@@ -110,7 +110,7 @@ class NN:
             err = error[-i]
             for j in range(len(layer.weights)):
                 layer.bias.set(j, layer.bias[j] - self.learningRate * err[j])
-                for k in range(len(pLayer.weights)):
+                for k in range(len(pLayer.neurons)):
                     layer.weights[j].set(k, layer.weights[j][k] - self.learningRate * pLayer.neurons[k] * err[j])
 
     def train(self, data, targets, batchSize=1, debug=False): #NOTE: if batch does not evenly divide the data then data will be skipped
