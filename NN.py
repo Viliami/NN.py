@@ -41,6 +41,9 @@ class NN:
         self.error = 99999999
         self.learningRate = 0.5
 
+    def setLearningRate(self, rate):
+        self.learningRate = rate
+
     def setActivation(self, name): #returns True if activation exists else False
         name = name.lower()
         if(name == "sigmoid"):
