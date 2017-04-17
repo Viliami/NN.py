@@ -1,16 +1,17 @@
 from NN import *
 import graphics as g
 
-target = [0,1,2]
-nn = NN(3, [2,2], 3)
-nn.feedForward()
+#TODO:add momentum
 
-samples = 500
-for i in range(samples):
-    nn.backprop(target)
-    nn.feedForward()
-    if(not (i+1)%(samples/10)):
-        print(i+1,"tries, error:",nn.cost(target))
+target = [3,6]
+samples = 100
+data = [[0.2,0.2]]*samples
+answers = [target]*samples
+
+nn = NN(2, [2], 2)
+nn.setLearningRate(0.5)
+nn.train(data, answers,1,True)
+print(nn.predict([0.2,0.2]))
 
 screen = g.init(700,350, "NN.py")
 while(g.hEvents()):
