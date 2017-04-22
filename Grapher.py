@@ -4,19 +4,19 @@ BLACK = (0,0,0)
 WHITE = (255,255,255)
 
 class BaseGraph:
-    def __init__(self, screen, backgroundColor):
+    def __init__(self, screen, backgroundColor=WHITE):
         self.screen = screen
         self.backgroundColor = backgroundColor
 
-    def changeWidth(width):
+    def changeWidth(self,width):
         # self.screen.surface = pygame.transform.scale(self.screen,(width,self.height))
         pass
 
-    def setHeight(height):
+    def setHeight(self,height):
         # self.screen = pygame.transform.scale(self.screen,(self.width,height))
         pass
 
-    def clear():
+    def clear(self):
         self.screen.clear(self.backgroundColor)
 
     def render(self):
@@ -28,12 +28,12 @@ class Grapher(BaseGraph):
         self.width, self.height =  screen.getSize()
         self.radius = radius
         self.gridShown = gridShown
-        self.gridWidth = gridWidth
-        self.gridHeight = gridHeight
+        self.gridWidth,self.gridHeight = gridWidth,gridHeight
         self.points = []
         self.lines = []
         self.backgroundColor = WHITE
         self.gridColor = BLACK
+        self.scaleX, self.scaleY = (0,0)
 
     def showGrid(self):
         self.gridShown = True
@@ -65,7 +65,6 @@ class Grapher(BaseGraph):
 
     def plot(self, x, y, color=BLACK):
         # save plots to array
-        x,y = self.graphToSurface((x,y))
         self.points.append((x,y,color))
 
     def plotLine(self, startPosOrM, endPosOrC, color=BLACK):
@@ -95,15 +94,16 @@ class Grapher(BaseGraph):
         sPos = self.graphToSurface(center)
         if(self.width == self.height):
             radius *= float(self.width)/self.gridWidth
-            pygame.gfxdraw.aacircle(self.surface, int(sPos[0]), int(sPos[1]), int(radius), color)
-            pygame.gfxdraw.filled_circle(self.surface, int(sPos[0]), int(sPos[1]), int(radius), color)
+            # pygame.gfxdraw.aacircle(self.surface, int(sPos[0]), int(sPos[1]), int(radius), color)
+            # pygame.gfxdraw.filled_circle(self.surface, int(sPos[0]), int(sPos[1]), int(radius), color)
+            self.screen.circle(sPos,radius,color)
 
     def renderPoint(self, x, y, color):
         if(self.radius > 1):
-            pygame.gfxdraw.aacircle(self.surface, int(x),int(y),self.radius, (color[0],color[1],color[2]))
-            pygame.gfxdraw.filled_circle(self.surface, int(x),int(y),self.radius, color)
-        else:
-            self.surface.fill(color, ((x,y),(2,2)))
+            # pygame.gfxdraw.aacircle(self.surface, int(x),int(y),self.radius, (color[0],color[1],color[2]))
+            # pygame.gfxdraw.filled_circle(self.surface, int(x),int(y),self.radius, color)
+            x,y = self.graphToSurface((x,y))
+            self.screen.circle((x,y),self.radius,color)
 
     def renderLine(self, startPos, endPos, color):
         pygame.draw.aaline(self.surface, color, startPos, endPos)
@@ -112,11 +112,14 @@ class Grapher(BaseGraph):
         gWidth=float(self.width)/self.gridWidth
         gHeight=float(self.height)/self.gridHeight
         for x in range(1,self.gridWidth):
-            pygame.draw.line(self.surface, BLACK, (x*gWidth, 0),(x*gWidth, self.height))
-        for y in range(1, self.gridHeight):
-            pygame.draw.line(self.surface, BLACK, (0, y*gHeight),(self.width, y*gHeight))
+            # pygame.draw.line(self.screen, BLACK, (x*gWidth, 0),(x*gWidth, self.height))
+            self.screen.line((x*gWidth,0),(x*gWidth,self.height), self.gridColor)
 
-    def render(self):
+        for y in range(1, self.gridHeight):
+            # pygame.draw.line(self.surface, BLACK, (0, y*gHeight),(self.width, y*gHeight))
+            self.screen.line((0,y*gHeight),(self.width,y*gHeight),self.gridColor)
+
+    def render(self): #TODO: connect the lines
         if(self.gridShown):
             self.renderGrid()
 
@@ -125,18 +128,27 @@ class Grapher(BaseGraph):
         for line in self.lines:
             self.renderLine(line[0], line[1], line[2])
 
-    def clear(self):
-        self.screen.clear(self.backgroundColor)
+    def clearPoints(self):
         self.points = []
         self.lines = []
 
     def setXAxis(self, x):
-        pass
+        self.gridWidth = x
 
     def setYAxis(self, y):
-        pass
+        self.gridHeight = y
 
-class Structure(Grapher):
+    def setScaleX(self, scale):
+        self.scaleX = scale
+
+    def setScaleY(self, scale):
+        self.scaleY = scale
+
+    def plotSeries(self, y):
+        self.plot(self.gridWidth,y,(255,0,0))
+        self.gridWidth += 1
+
+class Structure(BaseGraph):
     def render(self, nn,color=BLACK):
         screen = self.screen
         self.screen.clear(self.backgroundColor)
