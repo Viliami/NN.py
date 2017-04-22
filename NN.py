@@ -174,23 +174,3 @@ class NN:
                     if(not (i+1)%(size/10) and debug):
                         print(i+1,self.cost(targets[i]))
                     err = []
-
-    def draw(self, surface, color=(0,0,0)):
-        w,h = surface.get_size()
-        y_pad = 10
-        x_pad = 10
-        x_delta = (w-(2*x_pad))/len(self.layers)
-        x = x_delta/2
-        layers_size = len(self.layers)
-        for i in range(layers_size):
-            layer = self.layers[i]
-            y_delta = (h-(y_pad*2))/len(layer.neurons.value)
-            y = y_pad+(y_delta/2)
-            for j in range(len(layer.neurons.value)):
-                for k in range(len(layer.weights[j])):
-                    prevLayer = self.layers[i-1]
-                    temp_y_delta = (h-(y_pad*2))/len(layer.weights[j])
-                    g.line((x,y), (x-x_delta,y_pad+(temp_y_delta/2)+(temp_y_delta*k)), color)
-                g.circle((x, y), min(20, y_delta-(y_pad*2)), color)
-                y+=y_delta
-            x += x_delta
