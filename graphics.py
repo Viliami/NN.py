@@ -1,40 +1,54 @@
 import pygame, os, pygame.gfxdraw
-
-os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (10,10)
-screen = 0
-clock = 0
+os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (20,50)
 WHITE = (255,255,255)
 BLACK = (0,0,0)
 RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
+pygame.init()
 
-def init(width, height, caption="Graphics Window"):
-    global screen
-    pygame.init()
-    pygame.display.set_caption(caption)
-    # clock = pygame.time.Clock()
-    screen = pygame.display.set_mode((width, height))
-    return screen
+class Screen:
+    def __init__(self,width, height):
+        self.clock = pygame.time.Clock()
+        self.width = width
+        self.height = height
+        self.screen = pygame.Surface((width,height))
 
-def hEvents():
-    for e in pygame.event.get():
-        if(e.type == pygame.QUIT):
-            return False
-        elif(e.type == pygame.KEYDOWN):
-            if(e.key == pygame.K_ESCAPE):
+    def setDisplay(self,caption="Graphics Window"):
+        self.screen = pygame.display.set_mode((self.width,self.height))
+        pygame.display.set_caption(caption)
+
+    def hEvents(self):
+        for e in pygame.event.get():
+            if(e.type == pygame.QUIT):
                 return False
-    return True
+            elif(e.type == pygame.KEYDOWN):
+                if(e.key == pygame.K_ESCAPE):
+                    return False
+        return True
 
-def begin(color=WHITE):
-    screen.fill(color)
+    def clear(self,color=WHITE):
+        self.screen.fill(color)
 
-def end():
-    pygame.display.flip()
+    def update(self):
+        pygame.display.flip()
 
-def quit():
-    pygame.quit()
+    def quit(self):
+        pygame.quit()
 
-def circle((x,y), rad, color):
-    pygame.gfxdraw.aacircle(screen, x, y, rad, color)
-    pygame.gfxdraw.filled_circle(screen, x,y,rad, color)
+    def getSize(self):
+        return (self.width,self.height)
+
+    def circle(self,pos, rad, color):
+        x,y = pos
+        x = int(x)
+        y = int(y)
+        rad = int(rad)
+        pygame.gfxdraw.filled_circle(self.screen, x,y,rad, (66, 235, 244))
+        pygame.gfxdraw.aacircle(self.screen, x,y,rad, BLACK)
+
+    def line(self,sPos, ePos, color):
+        pygame.draw.aaline(self.screen, color, sPos, ePos)
+
+    def blit(self, screen, dest=(0,0),area=None):
+        self.screen.blit(screen.screen, dest, area=None)
