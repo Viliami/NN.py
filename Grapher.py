@@ -3,9 +3,26 @@ import pygame, pygame.gfxdraw
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 
-#TODO: change from pygame to graphics
+class BaseGraph:
+    def __init__(self, screen, backgroundColor):
+        self.screen = screen
+        self.backgroundColor = backgroundColor
 
-class Grapher:
+    def changeWidth(width):
+        # self.screen.surface = pygame.transform.scale(self.screen,(width,self.height))
+        pass
+
+    def setHeight(height):
+        # self.screen = pygame.transform.scale(self.screen,(self.width,height))
+        pass
+
+    def clear():
+        self.screen.clear(self.backgroundColor)
+
+    def render(self):
+        pass
+
+class Grapher(BaseGraph):
     def __init__(self, screen, gridWidth=10, gridHeight=10, gridShown=False, radius=4):
         self.screen = screen
         self.width, self.height =  screen.getSize()
@@ -15,6 +32,8 @@ class Grapher:
         self.gridHeight = gridHeight
         self.points = []
         self.lines = []
+        self.backgroundColor = WHITE
+        self.gridColor = BLACK
 
     def showGrid(self):
         self.gridShown = True
@@ -22,18 +41,10 @@ class Grapher:
         self.gridShown = False
 
     def setGridColor(self, color):
-        self.gridColor = BLACK
+        self.gridColor = color
 
     def setBackgroundColor(self, color):
-        self.backgroundColor = WHITE
-
-    def changeWidth(width):
-        # self.screen.surface = pygame.transform.scale(self.screen,(width,self.height))
-        pass
-
-    def setHeight(height):
-        # self.screen = pygame.transform.scale(self.screen,(self.width,height))
-        pass
+        self.backgroundColor = color
 
     def linePoint(self, m, c, x): #gets y at a point x
         return m*x + c
@@ -115,6 +126,7 @@ class Grapher:
             self.renderLine(line[0], line[1], line[2])
 
     def clear(self):
+        self.screen.clear(self.backgroundColor)
         self.points = []
         self.lines = []
 
@@ -124,8 +136,10 @@ class Grapher:
     def setYAxis(self, y):
         pass
 
-    def drawNN(self, nn,color=(0,0,0)):
+class Structure(Grapher):
+    def render(self, nn,color=BLACK):
         screen = self.screen
+        self.screen.clear(self.backgroundColor)
         w,h = screen.getSize()
         y_pad = 10
         x_pad = 10
