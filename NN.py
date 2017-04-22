@@ -15,6 +15,31 @@ def relu(x):
 def reluPrime(x):
     return int(x > 0)
 
+# def rrelu(x):
+#     self.u - self.l
+#     return (x)
+#
+# def rreluPrime(x):
+#     return int(x)
+
+def elu(x): #TODO: accept a as hyperparameter
+    a = 0.1
+    if(x >= 0):
+        return x
+    return a*(math.exp(x)-1)
+
+def eluPrime(x):
+    a = 0.1
+    if(x >= 0):
+        return x
+    return a*math.exp(x)
+
+def tanh(x):
+    return math.tanh(x)
+
+def tanhPrime(x):
+    return 1 - (math.tanh(x)**2)
+
 def average(x):
     return float(sum(x))/max(len(x),1)
 
@@ -44,7 +69,7 @@ class NN:
     def setLearningRate(self, rate):
         self.learningRate = rate
 
-    def setActivation(self, name): #returns True if activation exists else False
+    def setActivation(self, name, *params): #returns True if activation exists else False
         name = name.lower()
         if(name == "sigmoid"):
             self.activation = sigmoid
@@ -54,6 +79,12 @@ class NN:
             self.activation = relu
             self.activationPrime = reluPrime
             return True
+        elif(name == "elu"):
+            self.activation = elu
+            self.activationPrime = eluPrime
+        elif(name == "tanh"):
+            self.activation = tanh
+            self.activationPrime = tanhPrime
         else:
             return False
 
