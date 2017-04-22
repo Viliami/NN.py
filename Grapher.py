@@ -3,10 +3,12 @@ import pygame, pygame.gfxdraw
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 
+#TODO: change from pygame to graphics
+
 class Grapher:
-    def __init__(self, surface, gridWidth=10, gridHeight=10, gridShown=False, radius=4):
-        self.surface = surface
-        self.width, self.height =  surface.get_size()
+    def __init__(self, screen, gridWidth=10, gridHeight=10, gridShown=False, radius=4):
+        self.screen = screen
+        self.width, self.height =  screen.getSize()
         self.radius = radius
         self.gridShown = gridShown
         self.gridWidth = gridWidth
@@ -19,16 +21,32 @@ class Grapher:
     def hideGrid(self):
         self.gridShown = False
 
+    def setGridColor(self, color):
+        self.gridColor = BLACK
+
+    def setBackgroundColor(self, color):
+        self.backgroundColor = WHITE
+
+    def changeWidth(width):
+        # self.screen.surface = pygame.transform.scale(self.screen,(width,self.height))
+        pass
+
+    def setHeight(height):
+        # self.screen = pygame.transform.scale(self.screen,(self.width,height))
+        pass
+
     def linePoint(self, m, c, x): #gets y at a point x
         return m*x + c
 
-    def surfaceToGraph(self, (x,y)):
+    def surfaceToGraph(self, pos):
+        x,y = pos
         y = (self.height-y)
         gWidth = float(self.width)/self.gridWidth
         gHeight = float(self.height)/self.gridHeight
         return (x/gWidth,y/gHeight)
 
-    def graphToSurface(self, (x,y)):
+    def graphToSurface(self, pos):
+        x,y = pos
         y = (self.gridHeight-y)
         gWidth = float(self.width)/self.gridWidth
         gHeight = float(self.height)/self.gridHeight
@@ -82,9 +100,9 @@ class Grapher:
     def renderGrid(self):
         gWidth=float(self.width)/self.gridWidth
         gHeight=float(self.height)/self.gridHeight
-        for x in xrange(1,self.gridWidth):
+        for x in range(1,self.gridWidth):
             pygame.draw.line(self.surface, BLACK, (x*gWidth, 0),(x*gWidth, self.height))
-        for y in xrange(1, self.gridHeight):
+        for y in range(1, self.gridHeight):
             pygame.draw.line(self.surface, BLACK, (0, y*gHeight),(self.width, y*gHeight))
 
     def render(self):
@@ -99,3 +117,30 @@ class Grapher:
     def clear(self):
         self.points = []
         self.lines = []
+
+    def setXAxis(self, x):
+        pass
+
+    def setYAxis(self, y):
+        pass
+
+    def drawNN(self, nn,color=(0,0,0)):
+        screen = self.screen
+        w,h = screen.getSize()
+        y_pad = 10
+        x_pad = 10
+        x_delta = (w-(2*x_pad))/len(nn.layers)
+        x = x_delta/2
+        layers_size = len(nn.layers)
+        for i in range(layers_size):
+            layer = nn.layers[i]
+            y_delta = (h-(y_pad*2))/len(layer.neurons.value)
+            y = y_pad+(y_delta/2)
+            for j in range(len(layer.neurons.value)):
+                for k in range(len(layer.weights[j])):
+                    prevLayer = nn.layers[i-1]
+                    temp_y_delta = (h-(y_pad*2))/len(layer.weights[j])
+                    screen.line((x,y), (x-x_delta,y_pad+(temp_y_delta/2)+(temp_y_delta*k)), color)
+                screen.circle((x, y), min(20, y_delta-(y_pad*2)), color)
+                y+=y_delta
+            x += x_delta
