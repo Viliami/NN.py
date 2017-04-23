@@ -125,7 +125,7 @@ class Grapher(BaseGraph):
             # pygame.draw.line(self.surface, BLACK, (0, y*gHeight),(self.width, y*gHeight))
             self.screen.line((0,y*gHeight),(self.width,y*gHeight),self.gridColor)
 
-    def render(self, connected=False): #TODO: connect the lines
+    def render(self, connected=False,text=None): #TODO: connect the lines
         if(self.gridShown):
             self.renderGrid()
 
@@ -142,6 +142,9 @@ class Grapher(BaseGraph):
             if(len(self.points) > 1): #TODO: optimize this
                 pygame.draw.aalines(self.screen.screen,BLACK, False,[self.graphToSurface((point[0],point[1])) for point in self.points])
 
+            if(text):
+                self.screen.text(text,(0,0))
+
     def clearPoints(self):
         self.points = []
         self.lines = []
@@ -151,6 +154,9 @@ class Grapher(BaseGraph):
 
     def setYAxis(self, y):
         self.gridHeight = y
+
+    def setAxis(self, x,y):
+        self.gridWidth,self.gridHeight = x,y
 
     def setScaleX(self, scale):
         self.scaleX = scale
@@ -167,7 +173,7 @@ class Grapher(BaseGraph):
 class Structure(BaseGraph):
     def render(self, nn,color=BLACK):
         screen = self.screen
-        self.screen.clear(self.backgroundColor)
+        screen.clear(self.backgroundColor)
         w,h = screen.getSize()
         y_pad = 10
         x_pad = 10
@@ -186,3 +192,4 @@ class Structure(BaseGraph):
                 screen.circle((x, y), min(20, y_delta-(y_pad*2)), color)
                 y+=y_delta
             x += x_delta
+        screen.text("Network structure",(0,0))
