@@ -7,12 +7,16 @@ GREEN = (0,255,0)
 BLUE = (0,0,255)
 pygame.init()
 
+#TODO: make a screen draggable option
+
 class Screen:
     def __init__(self,width, height):
         self.clock = pygame.time.Clock()
         self.width = width
         self.height = height
         self.screen = pygame.Surface((width,height))
+        self.fontColor = BLACK #default font color
+        self.font = pygame.font.SysFont("Arial",16)
 
     def setDisplay(self,caption="Graphics Window"):
         self.screen = pygame.display.set_mode((self.width,self.height))
@@ -52,3 +56,6 @@ class Screen:
 
     def blit(self, screen, dest=(0,0),area=None):
         self.screen.blit(screen.screen, dest, area=None)
+
+    def text(self,text, pos, color=BLACK, aa=True):
+        self.screen.blit(self.font.render(text, aa, color), pos)
