@@ -3,6 +3,9 @@ import pygame, pygame.gfxdraw
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 
+def frange(start,end,step):
+    return map(lambda x: x*step, range(int(start*1./step),int(end*1./step)))
+
 class BaseGraph:
     def __init__(self, screen, backgroundColor=WHITE):
         self.screen = screen
@@ -106,12 +109,15 @@ class Grapher(BaseGraph):
             self.screen.circle((x,y),self.radius,color)
 
     def renderLine(self, startPos, endPos, color):
-        pygame.draw.aaline(self.surface, color, startPos, endPos)
+        # pygame.draw.aaline(self.surface, color, startPos, endPos)
+        sPos = self.graphToSurface(startPos)
+        ePos = self.graphToSurface(endPos)
+        self.screen.line(sPos,ePos,color)
 
     def renderGrid(self):
         gWidth=float(self.width)/self.gridWidth
         gHeight=float(self.height)/self.gridHeight
-        for x in range(1,self.gridWidth):
+        for x in frange(1,self.gridWidth,self.scaleX):
             # pygame.draw.line(self.screen, BLACK, (x*gWidth, 0),(x*gWidth, self.height))
             self.screen.line((x*gWidth,0),(x*gWidth,self.height), self.gridColor)
 
@@ -119,14 +125,22 @@ class Grapher(BaseGraph):
             # pygame.draw.line(self.surface, BLACK, (0, y*gHeight),(self.width, y*gHeight))
             self.screen.line((0,y*gHeight),(self.width,y*gHeight),self.gridColor)
 
-    def render(self): #TODO: connect the lines
+    def render(self, connected=False): #TODO: connect the lines
         if(self.gridShown):
             self.renderGrid()
 
-        for point in self.points:
-            self.renderPoint(point[0], point[1], point[2])
         for line in self.lines:
             self.renderLine(line[0], line[1], line[2])
+        if(not connected):
+            for point in self.points:
+                self.renderPoint(point[0], point[1], point[2])
+        else:
+            # for i in range(1,len(self.points)):
+            #     point = self.points[i]
+            #     prevPoint = self.points[i-1]
+                # self.renderLine((point[0],point[1]),(prevPoint[0],prevPoint[1]),BLACK)
+            if(len(self.points) > 1): #TODO: optimize this
+                pygame.draw.aalines(self.screen.screen,BLACK, False,[self.graphToSurface((point[0],point[1])) for point in self.points])
 
     def clearPoints(self):
         self.points = []
@@ -147,6 +161,8 @@ class Grapher(BaseGraph):
     def plotSeries(self, y):
         self.plot(self.gridWidth,y,(255,0,0))
         self.gridWidth += 1
+        if(self.gridWidth%50 == 0):
+            self.setScaleX(self.gridWidth/10)
 
 class Structure(BaseGraph):
     def render(self, nn,color=BLACK):
