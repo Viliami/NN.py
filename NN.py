@@ -13,7 +13,7 @@ def relu(x):
     return max(0,x)
 
 def reluPrime(x):
-    return int(x > 0)
+    return int(x >= 0)
 
 # def rrelu(x):
 #     self.u - self.l
@@ -49,9 +49,15 @@ class Layer:
             weights = 0
         self.neurons = Vector(*[1 for i in range(nodes)])
         self.weights = Matrix(weights,nodes)
+        variance = 0
+        if weights != 0:
+            variance = 1/weights
+        print("variance",variance,"weights",weights)
         for i in range(nodes):
-            self.weights.set(i, Vector(*[random.random() for i in range(weights)]))
-        self.bias = Vector(*[random.random() for i in range(nodes)])
+            # self.weights.set(i, Vector(*[random.random() for i in range(weights)]))
+            self.weights.set(i, Vector(*[random.normalvariate(0,math.sqrt(variance)) for i in range(weights)]))
+        # self.bias = Vector(*[random.random() for i in range(nodes)])
+        self.bias = Vector(*[random.normalvariate(0,math.sqrt(variance)) for i in range(nodes)])
 
     def __str__(self):
         return str(self.neurons)
@@ -60,11 +66,11 @@ class NN:
     def __init__(self, inputNodes, hiddenLayers, outputNodes):
         self.layers = [Layer(inputNodes, 0)]
         t = [inputNodes,*hiddenLayers, outputNodes]
-        for i in range(len(hiddenLayers)):
+        for i in range(len(hiddenLayers)): #TODO: change this
             self.layers.append(Layer(hiddenLayers[i], t[i])) #num of nodes, num of prev nodes
         self.layers.append(Layer(outputNodes, t[-2]))
         self.error = 99999999
-        self.learningRate = 0.5
+        self.learningRate = 0.4
 
     def setLearningRate(self, rate):
         self.learningRate = rate
@@ -88,13 +94,22 @@ class NN:
         else:
             return False
 
-    def cost(self, target):
-        output = self.layers[-1].neurons
+    def cost(self, target,output=None):
+        if(not output):
+            output = self.layers[-1].neurons
         t = type(target)
         if(type(target) == list):
             target = Vector(*target)
-        self.error = sum((target-output).apply(lambda x:x**2))/2
+        self.error = sum((output-target).apply(lambda x:x**2))/2
         return self.error
+
+    def costDerivative(self, target,output=None):
+        if(not output):
+            output = self.layers[-1].neurons
+        t = type(target)
+        if(type(target) == list):
+            target = Vector(*target)
+        return (output-target)
 
     def activation(self, x): #default is ReLU
         return relu(x)
@@ -109,8 +124,10 @@ class NN:
         return False
 
     def predict(self, inputValues):
-        self.setInput(inputValues)
-        return self.feedForward()
+        if(self.setInput(inputValues)):
+            return self.feedForward()
+        else:
+            return False
 
     def feedForward(self,inputValues=None):
         if(inputValues):
@@ -129,8 +146,7 @@ class NN:
         if(type(target) == list):
             target = Vector(*target)
         output = self.layers[-1].neurons
-        cost_derivative = (output - target)
-        error = [cost_derivative * output.apply(self.activationPrime)]
+        error = [self.costDerivative(target,output) * output.apply(self.activationPrime)]
 
         for i in range(len(self.layers)-2, 0, -1):
             nextLayer = self.layers[i+1]
