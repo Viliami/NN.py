@@ -36,7 +36,7 @@ class Grapher(BaseGraph):
         self.lines = []
         self.backgroundColor = WHITE
         self.gridColor = BLACK
-        self.scaleX, self.scaleY = (0,0)
+        self.scaleX, self.scaleY = (1,1)
 
     def showGrid(self):
         self.gridShown = True
@@ -101,13 +101,15 @@ class Grapher(BaseGraph):
             # pygame.gfxdraw.filled_circle(self.surface, int(sPos[0]), int(sPos[1]), int(radius), color)
             self.screen.circle(sPos,radius,color)
 
-    def renderPoint(self, x, y, color):
+    def renderPoint(self, x, y, color,circle=True):
         if(self.radius > 1):
             # pygame.gfxdraw.aacircle(self.surface, int(x),int(y),self.radius, (color[0],color[1],color[2]))
             # pygame.gfxdraw.filled_circle(self.surface, int(x),int(y),self.radius, color)
             x,y = self.graphToSurface((x,y))
-            self.screen.circle((x,y),self.radius,color)
-
+            if(circle):
+                self.screen.circle((x,y),self.radius,color,True)
+            else:
+                self.screen.rectangle(x,y,self.radius,self.radius,color)
     def renderLine(self, startPos, endPos, color):
         # pygame.draw.aaline(self.surface, color, startPos, endPos)
         sPos = self.graphToSurface(startPos)
@@ -121,7 +123,7 @@ class Grapher(BaseGraph):
             # pygame.draw.line(self.screen, BLACK, (x*gWidth, 0),(x*gWidth, self.height))
             self.screen.line((x*gWidth,0),(x*gWidth,self.height), self.gridColor)
 
-        for y in range(1, self.gridHeight):
+        for y in range(self.gridHeight):
             # pygame.draw.line(self.surface, BLACK, (0, y*gHeight),(self.width, y*gHeight))
             self.screen.line((0,y*gHeight),(self.width,y*gHeight),self.gridColor)
 
@@ -171,7 +173,7 @@ class Grapher(BaseGraph):
             self.setScaleX(self.gridWidth/10)
 
 class Structure(BaseGraph):
-    def render(self, nn,color=BLACK):
+    def render(self, nn,color=(66, 235, 244)):
         screen = self.screen
         screen.clear(self.backgroundColor)
         w,h = screen.getSize()
@@ -188,8 +190,19 @@ class Structure(BaseGraph):
                 for k in range(len(layer.weights[j])):
                     prevLayer = nn.layers[i-1]
                     temp_y_delta = (h-(y_pad*2))/len(layer.weights[j])
-                    screen.line((x,y), (x-x_delta,y_pad+(temp_y_delta/2)+(temp_y_delta*k)), color)
-                screen.circle((x, y), min(20, y_delta-(y_pad*2)), color)
+                    screen.line((x,y), (x-x_delta,y_pad+(temp_y_delta/2)+(temp_y_delta*k)), BLACK,layer.weights[j][k])
+                screen.circle((x, y), min(20, y_delta-(y_pad*2)), color,True)
                 y+=y_delta
             x += x_delta
         screen.text("Network structure",(0,0))
+
+class NeuralGrid(Grapher): #only possible if there are 2 input neurons and 1 output
+        def render(self, nn):
+            if(self.gridShown):
+                self.renderGrid()
+            for x in range(self.gridWidth):
+                for y in range(self.gridHeight+1):
+                    output = nn.predict([x,y])[0]
+                    c = max(0,output*255)
+                    c = min(255,c)
+                    self.renderPoint(x,y,(0,c,c),False)
