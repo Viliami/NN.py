@@ -173,7 +173,7 @@ class Grapher(BaseGraph):
             self.setScaleX(self.gridWidth/10)
 
 class Structure(BaseGraph):
-    def render(self, nn,color=(66, 235, 244)):
+    def render(self, nn,color=(66, 235, 244)): #TODO: add value on hover
         screen = self.screen
         screen.clear(self.backgroundColor)
         w,h = screen.getSize()
@@ -187,11 +187,19 @@ class Structure(BaseGraph):
             y_delta = (h-(y_pad*2))/len(layer.neurons.value)
             y = y_pad+(y_delta/2)
             for j in range(len(layer.neurons.value)):
+                ncolor = color
+                if(layer.neurons[j] < 0):
+                    ncolor = (200,0,0)
+                screen.circle((x, y), min(20, y_delta-(y_pad*2)), ncolor,True)
                 for k in range(len(layer.weights[j])):
                     prevLayer = nn.layers[i-1]
                     temp_y_delta = (h-(y_pad*2))/len(layer.weights[j])
-                    screen.line((x,y), (x-x_delta,y_pad+(temp_y_delta/2)+(temp_y_delta*k)), BLACK,layer.weights[j][k])
-                screen.circle((x, y), min(20, y_delta-(y_pad*2)), color,True)
+                    weight = layer.weights[j][k]
+                    wcolor = BLACK
+                    if(weight < 0):
+                        wcolor = (200,0,0)
+                    screen.line((x,y), (x-x_delta,y_pad+(temp_y_delta/2)+(temp_y_delta*k)), wcolor, weight)
+
                 y+=y_delta
             x += x_delta
         screen.text("Network structure",(0,0))
