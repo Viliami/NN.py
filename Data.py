@@ -1,7 +1,7 @@
 import random
 
 class Data:
-    def __init__(self):s
+    def __init__(self):
         self.inputs = []
         self.answers = []
 
