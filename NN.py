@@ -13,7 +13,7 @@ def relu(x):
     return max(0,x)
 
 def reluPrime(x):
-    return int(x >= 0)
+    return int(x > 0)
 
 # def rrelu(x):
 #     self.u - self.l
@@ -21,6 +21,12 @@ def reluPrime(x):
 #
 # def rreluPrime(x):
 #     return int(x)
+
+def linear(x):
+    return x
+
+def linearPrime(x):
+    return 1
 
 def elu(x): #TODO: accept a as hyperparameter
     a = 0.1
@@ -48,6 +54,7 @@ class Layer:
         if(weights is None):
             weights = 0
         self.neurons = Vector(*[1 for i in range(nodes)])
+        self.inputs = Vector(*[1 for i in range(nodes)])
         self.weights = Matrix(weights,nodes)
         variance = 0
         if weights != 0:
@@ -91,8 +98,11 @@ class NN:
         elif(name == "tanh"):
             self.activation = tanh
             self.activationPrime = tanhPrime
+        elif(name == "linear"):
+            self.activation = linear
+            self.activationPrime = linearPrime
         else:
-            return False
+            return False #TODO: throw exception
 
     def cost(self, target,output=None):
         if(not output):
@@ -136,9 +146,9 @@ class NN:
             layer = self.layers[i]
             prevLayer = self.layers[i-1]
             for j in range(len(layer.neurons.value)):
-                layer.neurons.set(j, sum(prevLayer.neurons*layer.weights[j]))
-            layer.neurons += layer.bias
-            layer.neurons = layer.neurons.apply(self.activation)
+                layer.inputs.set(j, sum(prevLayer.neurons*layer.weights[j]))
+            layer.inputs += layer.bias
+            layer.neurons = layer.inputs.apply(self.activation)
         return self.layers[-1].neurons
 
     def backprop(self, target, inputValues):
@@ -146,12 +156,13 @@ class NN:
         if(type(target) == list):
             target = Vector(*target)
         output = self.layers[-1].neurons
-        error = [self.costDerivative(target,output) * output.apply(self.activationPrime)]
+        # error = [self.costDerivative(target,output) * output.apply(self.activationPrime)]
+        error = [self.costDerivative(target,output) * self.layers[-1].inputs.apply(self.activationPrime)]
 
         for i in range(len(self.layers)-2, 0, -1):
-            nextLayer = self.layers[i+1]
+            prevLayer = self.layers[i+1]
             currentLayer = self.layers[i]
-            error.append((nextLayer.weights.transpose()*error[-1])*currentLayer.neurons.apply(self.activationPrime))
+            error.append((prevLayer.weights.transpose()*error[-1])*currentLayer.neurons.apply(self.activationPrime))
         return error
 
     def updateParams(self, error):
