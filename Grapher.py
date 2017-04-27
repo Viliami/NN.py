@@ -101,15 +101,18 @@ class Grapher(BaseGraph):
             # pygame.gfxdraw.filled_circle(self.surface, int(sPos[0]), int(sPos[1]), int(radius), color)
             self.screen.circle(sPos,radius,color)
 
-    def renderPoint(self, x, y, color,circle=True):
+    def renderPoint(self, x, y, color,circle=True, width=None):
         if(self.radius > 1):
             # pygame.gfxdraw.aacircle(self.surface, int(x),int(y),self.radius, (color[0],color[1],color[2]))
             # pygame.gfxdraw.filled_circle(self.surface, int(x),int(y),self.radius, color)
             x,y = self.graphToSurface((x,y))
+            wid = self.radius
+            if(width):
+                wid = width
             if(circle):
-                self.screen.circle((x,y),self.radius,color,True)
+                self.screen.circle((x,y),wid,color,True)
             else:
-                self.screen.rectangle(x,y,self.radius,self.radius,color)
+                self.screen.rectangle(x,y,wid,wid,color)
     def renderLine(self, startPos, endPos, color):
         # pygame.draw.aaline(self.surface, color, startPos, endPos)
         sPos = self.graphToSurface(startPos)
@@ -173,7 +176,7 @@ class Grapher(BaseGraph):
             self.setScaleX(self.gridWidth/10)
 
 class Structure(BaseGraph):
-    def render(self, nn,color=(66, 235, 244)): #TODO: add value on hover
+    def render(self, nn,color=(66, 235, 244)): #TODO: add text value on hover
         screen = self.screen
         screen.clear(self.backgroundColor)
         w,h = screen.getSize()
@@ -188,7 +191,7 @@ class Structure(BaseGraph):
             y = y_pad+(y_delta/2)
             for j in range(len(layer.neurons.value)):
                 ncolor = color
-                if(layer.neurons[j] < 0):
+                if(layer.neurons[j] <= 0):
                     ncolor = (200,0,0)
                 screen.circle((x, y), min(20, y_delta-(y_pad*2)), ncolor,True)
                 for k in range(len(layer.weights[j])):
@@ -196,21 +199,27 @@ class Structure(BaseGraph):
                     temp_y_delta = (h-(y_pad*2))/len(layer.weights[j])
                     weight = layer.weights[j][k]
                     wcolor = BLACK
-                    if(weight < 0):
+                    if(weight <= 0):
                         wcolor = (200,0,0)
+                        weight = -weight
                     screen.line((x,y), (x-x_delta,y_pad+(temp_y_delta/2)+(temp_y_delta*k)), wcolor, weight)
 
                 y+=y_delta
             x += x_delta
         screen.text("Network structure",(0,0))
 
-class NeuralGrid(Grapher): #only possible if there are 2 input neurons and 1 output
-        def render(self, nn):
+class NeuralGrid(Grapher): #only possible if there are at least 2 input neurons and 1 output
+        def render(self, nn,data = None):
             if(self.gridShown):
                 self.renderGrid()
             for x in range(self.gridWidth):
                 for y in range(self.gridHeight+1):
                     output = nn.predict([x,y])[0]
-                    c = max(0,output*255)
-                    c = min(255,c)
+                    c = min(255,max(0,output*255))
                     self.renderPoint(x,y,(0,c,c),False)
+
+            if(data):
+                for i in range(len(data.inputs)):
+                    x,y = data.inputs[i]
+                    c =  min(255,max(0,data.answers[i][0]*255))
+                    self.renderPoint(x,y,(0,c,c),True,5)
