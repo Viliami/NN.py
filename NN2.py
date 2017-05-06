@@ -86,3 +86,6 @@ class NN:
 
     def evaluate(self, inputs, answers): #evaluate error on validation dataset
         pass
+
+    def __len__(self):
+        return len(self.layers)
