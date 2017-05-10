@@ -1,4 +1,4 @@
-from graphics_qt import *
+from graphics_pygame import *
 
 s = Screen(500,500,"kek")
 
