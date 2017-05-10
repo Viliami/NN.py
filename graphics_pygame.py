@@ -5,13 +5,13 @@ BLACK = (0,0,0)
 RED = (255,0,0)
 GREEN = (0,255,0)
 BLUE = (0,0,255)
-pygame.init()
 
 class Screen:
     def __init__(self, width, height, title="Untitled"):
         self.clock = pygame.time.Clock()
         self.width, self.height = width, height
         self.surfaces = []
+        pygame.init()
         self.font = pygame.font.SysFont("Arial",16)
         self.screen =pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption(title)
@@ -33,6 +33,7 @@ class Screen:
         while self.hEvents():
             self.screen.fill(WHITE)
             for surface in self.surfaces:
+                surface.fill(WHITE)
                 surface.render()
                 self.screen.blit(surface,(surface.x,surface.y))
             pygame.display.flip()
@@ -44,7 +45,7 @@ class Screen:
 
 class Surface(pygame.Surface): #TODO: profile blitting vs direct drawing
     def __init__(self, width, height):
-        super().__init__((width,height))
+        super().__init__((width+1,height+1))
         self.width, self.height = width, height
         self.x, self.y = 0,0
         self.parent = None
@@ -84,19 +85,12 @@ class Surface(pygame.Surface): #TODO: profile blitting vs direct drawing
     def circle(self, pos, rad, color=BLACK):
         pygame.draw.circle(self, color, pos, rad, 1)
 
-    def filledCircle(self, pos, rad, color=BLACK):
-        pygame.draw.circle(self, color, pos, rad, 1)
+    def filledCircle(self, pos, rad, color=BLACK, outlineColor=BLACK):
+        pygame.draw.circle(self, color, pos, rad-1)
+        pygame.draw.circle(self, outlineColor, pos, rad, 1)
 
     def line(self, sPos, ePos, color=BLACK, width=1):
         pygame.draw.line(self, color, sPos, ePos, width)
 
     def text(self, pos, text, color=BLACK):
         self.blit(self.font.render(text, True, color), pos)
-
-s = Screen(500,500,"kek")
-
-surf = Surface(300,300)
-
-s.addSurface(surf, 50,50)
-
-s.start()
