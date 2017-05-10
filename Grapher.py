@@ -23,7 +23,8 @@ class Graph2D(Surface):
             self.line(self.toPixel(0, y), self.toPixel(self.width, y))
 
     def render(self):
-        self.renderGrid()
+        if(self.showGrid):
+            self.renderGrid()
         for point in self.points:
             self.filledCircle(self.toPixel(*point[0]), point[2], point[1], (255,0,0))
 
