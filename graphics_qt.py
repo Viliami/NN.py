@@ -18,8 +18,6 @@ class Screen(QWidget):
         self.surfaces.append(surface)
 
     def paintEvent(self, event):
-        print(event)
-        print(self.surfaces)
         for surface in self.surfaces:
             surface.begin(self)
             surface.render()
@@ -29,9 +27,6 @@ class Screen(QWidget):
         key = event.key()
         if(key == 16777216):
             self.close()
-
-    def process(self):
-        self.update()
 
     def quit(self):
         pass
@@ -43,7 +38,7 @@ class Screen(QWidget):
 BLACK = (0,0,0)
 WHITE = (255,255,255)
 
-class Surface(QPainter):
+class Surface(QPainter): #TODO: change to pixmap
     def __init__(self, width, height):
         super().__init__()
         self.width, self.height = width,height
@@ -91,6 +86,10 @@ class Surface(QPainter):
         self.line((10,10),(self.x, self.y),BLACK,2)
         self.text((100,200),"ayylmao")
 
+    def fill(self, color=WHITE):
+        self.color = color
+        self.filledRectangle((0,0),(self.width, self.height), color, color)
+
     def rectangle(self, pos, size, color=BLACK):
         self.color = color
         self.drawRect(*pos, *size)
@@ -119,8 +118,8 @@ class Surface(QPainter):
         self.drawEllipse(x, y, size[0]*2, size[1]*2)
 
     def filledEllipse(self, pos, size, color=BLACK, outlineColor=BLACK):
-        self.color = color
-        self.fillColor = outlineColor
+        self.fillColor = color
+        self.color = outlineColor
         x,y = pos
         x -= size[0]
         y -= size[1]
