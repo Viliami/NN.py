@@ -21,6 +21,7 @@ class Screen(QWidget):
         for surface in self.surfaces:
             surface.begin(self)
             surface.setRenderHints(QPainter.Antialiasing)
+            surface.translate(QPointF(*surface.pos))
             surface.render()
             surface.end()
 
@@ -79,7 +80,6 @@ class Surface(QPainter): #TODO: change to pixmap
         self.setPen(self.qp)
 
     def render(self):
-        self.translate(QPointF(*self.pos))
         self.filledSquare((self.x+20,self.y+20),50)
         self.filledRectangle((self.x,self.y),(50,50),WHITE)
         self.ellipse((10,10),(15,10))
