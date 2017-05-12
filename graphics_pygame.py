@@ -90,7 +90,7 @@ class Surface(pygame.Surface): #TODO: profile blitting vs direct drawing
         pygame.draw.circle(self, outlineColor, pos, rad, 1)
 
     def line(self, sPos, ePos, color=BLACK, width=1):
-        pygame.draw.line(self, color, sPos, ePos, width)
+        pygame.draw.aaline(self, color, sPos, ePos, width)
 
     def text(self, pos, text, color=BLACK):
         self.blit(self.font.render(text, True, color), pos)
