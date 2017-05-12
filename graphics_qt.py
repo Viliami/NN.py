@@ -20,6 +20,7 @@ class Screen(QWidget):
     def paintEvent(self, event):
         for surface in self.surfaces:
             surface.begin(self)
+            surface.setRenderHints(QPainter.Antialiasing)
             surface.render()
             surface.end()
 
@@ -120,6 +121,7 @@ class Surface(QPainter): #TODO: change to pixmap
     def filledEllipse(self, pos, size, color=BLACK, outlineColor=BLACK):
         self.fillColor = color
         self.color = outlineColor
+        self.lineWidth = 1
         x,y = pos
         x -= size[0]
         y -= size[1]
