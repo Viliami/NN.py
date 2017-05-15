@@ -13,6 +13,10 @@ screen.addSurface(structure, 0, 0)
 ngrid = NeuralGrid(200, 200, np.linspace(0,10,10), np.linspace(0,10,10), nn)
 screen.addSurface(ngrid, 50, 300)
 
+#add time series visualisaiton
+costGraph = TimeSeries(200,200, np.linspace(0,10,10))
+screen.addSurface(costGraph, 500,0)
+
 def onUpdate():
     nn.train([[1,1],[2,2],[3,3],[3,4]],[[1],[1],[1],[0]])
 screen.onUpdate = onUpdate
