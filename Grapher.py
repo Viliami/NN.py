@@ -28,11 +28,32 @@ class Graph2D(Surface):
         for point in self.points:
             self.renderPoint(point)
 
+    def renderLine(self, point, point2):
+        self.line(self.toPixel(*point[0]), self.toPixel(*point2[0]), BLACK, 2)
+
     def renderPoint(self, point):
         self.filledCircle(self.toPixel(*point[0]), point[2], point[1], (0,0,0))
 
     def plot(self, x, y, color, radius):
         self.points.append(((x,y),color,radius))
+
+class TimeSeries(Graph2D):
+    def __init__(self, width, height, yAxis):
+        super().__init__(width, height, np.linspace(0,1,2), yAxis)
+
+    def toPixel(self, cX, cY): #coordinates to pixels
+        xRatio = self.width/len(self.xAxis)
+        yRatio = self.height/len(self.yAxis)
+        return (int(cX*xRatio), int(self.height - cY*yRatio ))
+
+    def render(self):
+        for i in range(1,len(self.points)):
+            self.renderLine(self.points[i-1], self.points[i])
+
+    def plot(self, y):
+        x = len(self.xAxis)+1
+        self.xAxis = np.append(self.xAxis,len(self.xAxis)+1)
+        self.points.append(((x,y), (255,0,0), 3))
 
 class NeuralGrid(Graph2D): #only possible if there are at least 2 input neurons and 1 output
     def __init__(self, width, height, xAxis, yAxis, nn):
@@ -40,14 +61,13 @@ class NeuralGrid(Graph2D): #only possible if there are at least 2 input neurons 
         self.nn = nn
 
     def render(self):
-        # if(self.showGrid):
-            # self.renderGrid()
+        xPoints = len(self.xAxis)
         for x in self.xAxis:
             for y in self.yAxis:
                 output = self.nn.feedForward(x,y)[0]
                 c = min(255,max(0,output*255))
-                # self.renderPoint(((x,y),(c,c,c),2))
-                self.filledSquare(self.toPixel(x,y),11,(0,0,c))
+                self.filledSquare(self.toPixel(x,y),self.width/xPoints,(0,c,c))
+                self.renderPoint(((x,y),(c,c,c),2))
 
         # if(data):
         #     for i in range(len(data.inputs)):
@@ -91,4 +111,3 @@ class Structure(Surface):
                     screen.line((x,y), (x-x_delta,y_pad+(temp_y_delta//2)+int(temp_y_delta*k)), wcolor, weight)
                 y+=y_delta
             x += x_delta
-        # screen.text((0,0),"Network structure")
