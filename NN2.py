@@ -1,3 +1,5 @@
+import numpy
+
 def relu(x, deriv=False):
     return x
 
@@ -5,7 +7,41 @@ def MSE(output, target, deriv=False):
     if(deriv):
         # return target-output
         return output-target
-    return True
+    return ((target - output) ** 2).mean(axis=0)
+
+inputs = np.array([ [0,0,1],[0,1,1],[1,0,1],[1,1,1] ])
+target = np.array([0,0,1,1])
+#init with number between 1 and -1
+class SimpleNN: #no hidden layers
+    def __init__(self, inputNodes):
+        self.inputs = np.random.random(inputNodes)
+        self.outputs = np.random.random(1)
+        self.weights = np.random.random((inputNodes))
+
+    def activation(self, x, deriv=False):
+        return x
+
+    def setActivation(self, activationFunction):
+        if(activationFunction == "sigmoid"):
+            self.activation = sigmoid
+
+    def feedForward(self, input):
+        self.inputs = np.array(input)
+        self.outputs = self.activation(np.dot(inputs[i],self.weights))
+        return self.outputs
+
+    def backprop(self, target):
+        outputError = cost(self.outputs,target,True)
+        delta =  outputError * sigmoid(self.outputs,True)
+        return delta
+
+    def gd(self, delta): #gradient descent
+        self.weights += self.inputs *delta
+
+    def train(self, input, answer):
+        for i in range(len(input)):
+            nn.feedForward(input[i])
+            nn.gd(nn.backprop(answer[i]))
 
 class Layer:
     def __init__(self, nodes, prevNodes):
@@ -51,7 +87,7 @@ class NN:
             layer = self.layers[i]
             layer.netInput = np.dot(layer.weights,self.layers[i-1].activation)+layer.bias
             layer.activation = sigmoid(layer.netInput)
-        return self.layers[-1].activation
+        return self.layers[-1].activation[0]
 
     def backprop(self, *target):
         target = np.array([target]).T
@@ -82,10 +118,18 @@ class NN:
             raise ValueError("Incorrect dataset input (inputs and answers are different length)")
         for i in range(len(inputs)):
             self.feedForward(*inputs[i])
-            nn.sgd(nn.backprop(*answers[i]))
+            self.sgd(self.backprop(*answers[i]))
 
-    def evaluate(self, inputs, answers): #evaluate error on validation dataset
-        pass
+    def evaluate(self, inputs, answers): #evaluate error on a dataset
+        if(len(inputs) is not len(answers)):
+            raise ValueError("Incorrect dataset input (inputs and answers are different length)")
+        count = 0
+        for i in range(len(inputs)):
+            output = self.feedForward(*inputs[i])
+            count += self.cost(output, answers[i])
+            # print(self.cost(inputs[i], answers[i]))
+            # self.sg
+        return (count/len(inputs))
 
     def __len__(self):
         return len(self.layers)
