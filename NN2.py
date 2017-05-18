@@ -1,4 +1,11 @@
-import numpy
+import numpy as np
+
+np.random.seed(1)
+def sigmoid(x,deriv=False):
+    if(deriv):
+        sig = sigmoid(x)
+        return sig*(1 - sig)
+    return 1/(1+np.exp(-x))
 
 def relu(x, deriv=False):
     return x
@@ -57,7 +64,7 @@ class NN:
         self.layers = [Layer(layers[0],0)]
         for i in range(1,len(layers)):
             self.layers.append(Layer(layers[i],layers[i-1]))
-        self.__learningRate = 0.01 #arbitrary default learning rate
+        self.__learningRate = 0.03 #arbitrary default learning rate
         self.__activationFunction = sigmoid
         self.cost = MSE
 
@@ -113,12 +120,18 @@ class NN:
             layer.bias -= error[i]
             layer.weights -= error[i]*self.layers[-2-i].activation.T
 
-    def train(self, inputs, answers):
+    def train(self, inputsOrData, answers=None):
+        if(type(inputsOrData.inputs) is np.ndarray):
+            inputs = inputsOrData.inputs
+            answers = inputsOrData.outputs
         if(len(inputs) is not len(answers)):
             raise ValueError("Incorrect dataset input (inputs and answers are different length)")
+        errors = []
         for i in range(len(inputs)):
             self.feedForward(*inputs[i])
-            self.sgd(self.backprop(*answers[i]))
+            # self.sgd(self.backprop(*answers[i]))
+            errors.append(self.backprop(*answers[i]))
+        self.sgd(np.mean([error for error in errors],axis=0))
 
     def evaluate(self, inputs, answers): #evaluate error on a dataset
         if(len(inputs) is not len(answers)):
@@ -127,8 +140,6 @@ class NN:
         for i in range(len(inputs)):
             output = self.feedForward(*inputs[i])
             count += self.cost(output, answers[i])
-            # print(self.cost(inputs[i], answers[i]))
-            # self.sg
         return (count/len(inputs))
 
     def __len__(self):
