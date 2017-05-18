@@ -11,6 +11,8 @@ class Graph2D(Surface):
         self.points = []
 
     def toPixel(self, cX, cY): #coordinates to pixels
+        cX -= self.xAxis[0]
+        cY -= self.yAxis[0]
         xRatio = self.width/len(self.xAxis)
         yRatio = self.height/len(self.yAxis)
         return (int(cX*xRatio), int(cY*yRatio))
