@@ -1,6 +1,6 @@
 import numpy as np
 
-np.random.seed(1)
+# np.random.seed(1)
 def sigmoid(x,deriv=False):
     if(deriv):
         sig = sigmoid(x)
@@ -8,7 +8,17 @@ def sigmoid(x,deriv=False):
     return 1/(1+np.exp(-x))
 
 def relu(x, deriv=False):
-    return x
+    if(deriv):
+        y = np.array(x)
+        y[x > 0] = 1
+        y[x < 0] = 0
+        return y
+    return x * (x > 0)
+
+def tanh(x, deriv=False):
+    if(deriv):
+        return (np.tanh(x)*np.tanh(x))*-1 + 1
+    return np.tanh(x)
 
 def MSE(output, target, deriv=False):
     if(deriv):
@@ -83,7 +93,11 @@ class NN:
         if(value == "sigmoid"):
             self.__activationFunction = sigmoid
         elif(value == "relu"):
+            print("set activation function to relu")
             self.__activationFunction = relu
+        elif(value == "tanh"):
+            print("tanh!1!")
+            self.__activationFunction = tanh
 
     def feedForward(self, *inputs):
         if(len(inputs) != len(self.layers[0].activation)):
@@ -93,7 +107,7 @@ class NN:
         for i in range(1,len(self.layers)):
             layer = self.layers[i]
             layer.netInput = np.dot(layer.weights,self.layers[i-1].activation)+layer.bias
-            layer.activation = sigmoid(layer.netInput)
+            layer.activation = self.activationFunction(layer.netInput)
         return self.layers[-1].activation[0]
 
     def backprop(self, *target):
@@ -106,35 +120,37 @@ class NN:
         for i in range(1,len(self.layers)):
             layer = self.layers[-1-i]
             nextLayer = self.layers[-i]
-            error.append(np.dot(nextLayer.weights.T,error[-1]) * self.activationFunction(layer.netInput))
-
+            error.append(np.dot(nextLayer.weights.T,error[-1]) * self.activationFunction(layer.netInput,True))
         return error
 
-    def sgd(self, error): #stochastic gradient descent
+    def sgd(self, error,m=1): #stochastic gradient descent
         layerLen = len(self.layers)
         if(layerLen is not len(error)): #TODO:len-1
             raise ValueError("Incorrect error passed into sgd, not the same length as self.layers")
 
         for i in range(layerLen-1): #back to front
             layer = self.layers[-1-i]
-            layer.bias -= error[i]
-            layer.weights -= error[i]*self.layers[-2-i].activation.T
+            layer.bias -= error[i] * (self.learningRate/m)
+            layer.weights -= (error[i] * self.layers[-2-i].activation.T) * self.learningRate/m
 
     def train(self, inputsOrData, answers=None):
         if(type(inputsOrData.inputs) is np.ndarray):
             inputs = inputsOrData.inputs
             answers = inputsOrData.outputs
-        if(len(inputs) is not len(answers)):
+        if(len(inputs) != len(answers)):
+            print(len(inputs),len(answers))
             raise ValueError("Incorrect dataset input (inputs and answers are different length)")
         errors = []
         for i in range(len(inputs)):
             self.feedForward(*inputs[i])
-            # self.sgd(self.backprop(*answers[i]))
-            errors.append(self.backprop(*answers[i]))
-        self.sgd(np.mean([error for error in errors],axis=0))
+            self.sgd(self.backprop(*answers[i]))
+            # errors.append(self.backprop(*answers[i]))
+        # print([error[1] for error in errors])
+        # print(np.sum([error for error in errors],axis=0))
+        # self.sgd(np.mean(errors,axis=0),len(errors))
 
     def evaluate(self, inputs, answers): #evaluate error on a dataset
-        if(len(inputs) is not len(answers)):
+        if(len(inputs) != len(answers)):
             raise ValueError("Incorrect dataset input (inputs and answers are different length)")
         count = 0
         for i in range(len(inputs)):
