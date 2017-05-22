@@ -24,7 +24,7 @@ def MSE(output, target, deriv=False):
     if(deriv):
         # return target-output
         return output-target
-    return ((target - output) ** 2).mean(axis=0)
+    return ((target - output) ** 2).mean(axis=0)/2
 
 inputs = np.array([ [0,0,1],[0,1,1],[1,0,1],[1,1,1] ])
 target = np.array([0,0,1,1])
@@ -138,7 +138,6 @@ class NN:
             inputs = inputsOrData.inputs
             answers = inputsOrData.outputs
         if(len(inputs) != len(answers)):
-            print(len(inputs),len(answers))
             raise ValueError("Incorrect dataset input (inputs and answers are different length)")
         errors = []
         for i in range(len(inputs)):
