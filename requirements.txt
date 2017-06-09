@@ -1,0 +1,6 @@
+compulsory:
+- numpy
+
+optional:
+- pygame
+- qt
