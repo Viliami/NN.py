@@ -16,7 +16,11 @@ class Screen:
         self.screen =pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption(title)
 
+    def onUpdate(self):
+        pass
+
     def hEvents(self):
+        self.onUpdate()
         for e in pygame.event.get():
             if(e.type == pygame.QUIT):
                 return False
@@ -29,11 +33,10 @@ class Screen:
         return (self.width,self.height)
 
     def start(self):
-        print(WHITE)
         while self.hEvents():
             self.screen.fill(WHITE)
             for surface in self.surfaces:
-                surface.fill(WHITE)
+                # surface.fill(WHITE)
                 surface.render()
                 self.screen.blit(surface,(surface.x,surface.y))
             pygame.display.flip()
@@ -50,9 +53,10 @@ class Surface(pygame.Surface): #TODO: profile blitting vs direct drawing
         self.x, self.y = 0,0
         self.parent = None
         self.font = pygame.font.SysFont("Arial",16)
+        self.backgroundColor = WHITE
 
     def render(self):
-        self.fill(WHITE)
+        self.fill(self.backgroundColor)
         self.filledSquare((self.x+20,self.y+20),50)
         self.filledRectangle((self.x,self.y),(50,50),WHITE)
         self.ellipse((10,10),(15,10))
@@ -94,3 +98,6 @@ class Surface(pygame.Surface): #TODO: profile blitting vs direct drawing
 
     def text(self, pos, text, color=BLACK):
         self.blit(self.font.render(text, True, color), pos)
+
+    def imageArray(self, array):
+        pygame.surfarray.blit_array(self, array)
