@@ -18,12 +18,16 @@ class Screen(QWidget):
         self.surfaces.append(surface)
 
     def paintEvent(self, event):
+        self.onUpdate()
         for surface in self.surfaces:
             surface.begin(self)
             surface.setRenderHints(QPainter.Antialiasing)
             surface.translate(QPointF(*surface.pos))
             surface.render()
             surface.end()
+
+    def onUpdate(self):
+        pass
 
     def keyPressEvent(self, event):
         key = event.key()
