@@ -5,6 +5,9 @@ Neural Network lib in Python
 
 **Grapher.py**    - Data vizualization Class
 
-**graphics.py**   - Graphics Class
-
 **Data.py**       - Dataset Class
+
+## Graphics
+**graphics_pygame.py**   - Pygame Graphics Class
+
+**graphics_qt.py**       - QT Graphics Class
