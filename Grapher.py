@@ -1,6 +1,6 @@
 # from graphics_qt import *
 from graphics_pygame import *
-from NN3 import *
+from NN import *
 import math
 
 class Graph2D(Surface):
@@ -25,6 +25,7 @@ class Graph2D(Surface):
             self.line(self.toPixel(0, y), self.toPixel(self.width/xPoints, y))
 
     def render(self):
+        self.fill(self.backgroundColor)
         if(self.showGrid):
             self.renderGrid()
         for point in self.points:
@@ -44,12 +45,17 @@ class TimeSeries(Graph2D):
         super().__init__(width, height, np.linspace(0,1,2), yAxis)
         self.lines = 90
 
+    def setBackgroundColor(self, color):
+        print(self.backgroundColor)
+        self.backgroundColor = color
+
     def toPixel(self, cX, cY): #coordinates to pixels
         xRatio = self.width/len(self.xAxis)
         yRatio = self.height/len(self.yAxis)
         return (int(cX*xRatio), int(self.height - cY*yRatio ))
 
     def render(self):
+        self.fill(self.backgroundColor)
         step =int(len(self.points)/self.lines)+1
         for i in range(step,len(self.points),step):
             self.renderLine(self.points[i-step], self.points[i])
@@ -64,21 +70,27 @@ class NeuralGrid(Graph2D): #only possible if there are at least 2 input neurons 
         super().__init__(width, height, xAxis, yAxis)
         self.nn = nn
         self.data = data
-
-    def render(self):
-        xPoints = len(self.xAxis)
+        coord = []
         for x in self.xAxis:
             for y in self.yAxis:
-                output = self.nn.feedForward(x,y)[0]
-                c = min(255,max(0,output*255))
-                self.filledSquare(self.toPixel(x,y),self.width/xPoints,(0,c,c))
+                coord.append(np.array([x,y]))
+        self.coordinates = np.array(coord)
+
+    def render(self):
+        self.fill(self.backgroundColor)
+        a = self.nn.feedForwardM(self.coordinates)
+        counter = 0
+        for x in self.xAxis:
+            for y in self.yAxis:
+                c = min(255,max(0,a[counter]*255))
+                self.filledSquare(self.toPixel(x,y),11,(0,c,c))
+                counter+=1
 
         if(self.data):
             for i in range(len(self.data.inputs)):
                 x,y = self.data.inputs[i]
                 c = min(255, max(0, self.data.outputs[i,0] * 255))
-                # c = 255
-                self.renderPoint(((x,y),(0,c,c),2))
+                self.renderPoint(((x,y),(0,c,c),3))
 
 class Structure(Surface):
     def __init__(self, width, height, nn):
@@ -86,6 +98,7 @@ class Structure(Surface):
         super().__init__(width, height)
 
     def render(self): #TODO: add text value on hover
+        self.fill(self.backgroundColor)
         color=(66, 235, 244)
         screen = self
         w,h = self.width, self.height
@@ -99,12 +112,9 @@ class Structure(Surface):
             y_delta = (h-(y_pad*2))/len(layer.activation)
             y = y_pad+(y_delta//2)
             for j in range(len(layer.activation)):
-                ncolor = color
-                if(layer.activation[j] <= 0):
-                    ncolor = (200,0,0)
                 radius = int(y_delta-(y_pad*2))
-                radius = max(5, min(20, radius))
-                screen.filledCircle((x, int(y)), radius, ncolor)
+                radius = max(1, min(20, radius))
+                screen.filledCircle((x, int(y)), radius, color)
                 for k in range(len(layer.weights[j])):
                     prevLayer = self.nn.layers[i-1]
                     temp_y_delta = (h-(y_pad*2))/len(layer.weights[j])
@@ -117,3 +127,42 @@ class Structure(Surface):
                 y+=y_delta
             x += x_delta
         # screen.text((0,0),"Network structure")
+
+class ImgArray(Surface):
+    def __init__(self, width, height, array):
+        super().__init__(width, height)
+        self.array = array
+        if(len(self.array.shape) == 1):
+            self.array = self.array.reshape([int(np.sqrt(self.array.shape[0]))]*2)
+        self.blittingSurface = pygame.surfarray.make_surface(self.array)
+
+    def render(self):
+        self.fill(self.backgroundColor)
+        # print(self.array.shape)
+        # y = 0
+        # for rows in self.array:
+        #     x = 0
+        #     for pixel in rows:
+        #         x += 1
+        #         self.rectangle((x,y),(1,1),(pixel,pixel,pixel))
+        #     y+=1
+
+        # self.imageArray(self.array)
+        # pygame.surfarray.blit_array(self.blittingSurface, self.array)
+        self.blit(self.blittingSurface, (0,0))
+
+    def toRGB(self):
+        print(self.array.shape)
+        newArray = np.zeros((self.array.shape[0],self.array.shape[1], 3))
+        y = 0
+        for rows in self.array:
+            x = 0
+            for pixel in rows:
+                newArray[x,y].fill(pixel)
+                x += 1
+            y += 1
+        self.array = newArray
+        self.blittingSurface = pygame.surfarray.make_surface(self.array)
+
+    def toGrayScale(self):
+        pass
