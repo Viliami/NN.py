@@ -78,7 +78,7 @@ class NeuralGrid(Graph2D): #only possible if there are at least 2 input neurons 
 
     def render(self):
         self.fill(self.backgroundColor)
-        a = self.nn.feedForwardM(self.coordinates)
+        a = self.nn.feedForward(self.coordinates).T
         counter = 0
         for x in self.xAxis:
             for y in self.yAxis:
