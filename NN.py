@@ -31,32 +31,29 @@ class Layer:
         self.activation = np.random.random((nodes,1)) - 0.5
         self.netInput = np.random.random((nodes,1)) - 0.5
         self.bias = np.full((nodes,1), 0.1)
+        self._cost = MSE
+        self._activationFunction = relu
 
         #connecting this layer to the previous layer
         self.weights = np.random.random((nodes,prevNodes)) - 0.5
 
     def feedForward(self, prevLayer):
         self.netInput = np.dot(self.weights, prevLayer.activation) + self.bias
-        self.activation = self.activationFunction(prevLayer.netInput)
+        self.activation = self.activationFunction()
 
-    def backprop(self, error):
-        return np.dot(nextLayer.weights.T, error[-1]) * self.activationFunction(layer.netInput, True)
+    def backprop(self, error, nextLayer):
+        return np.dot(nextLayer.weights.T, error) * self.activationFunction(True)
 
-    def backprop(self, target):
-        target = np.array([target]).T
-        costPrime = self.cost(self.layers[-1].activation,target,True)
-        activationPrime = self.activationFunction(self.layers[-1].netInput,True)
+    def calcError(self, target): #calculate output layer error to backpropogate
+        costPrime = self.cost(target.T, True)
+        activationPrime = self.activationFunction(True)
+        return costPrime * activationPrime
 
-        #maybe use temp np array instead of list
-        error = [costPrime*activationPrime]
-        for i in range(1,len(self.layers)):
-            layer = self.layers[-1-i]
-            nextLayer = self.layers[-i]
-            error.append(np.dot(nextLayer.weights.T,error[-1]) * self.activationFunction(layer.netInput,True))
-        return error
+    def cost(self, target, deriv=False):
+        return self._cost(self.activation, target, deriv)
 
-    def calcError(self): #calculate output layer error to backpropogate
-        pass
+    def activationFunction(self, deriv=False):
+        return self._activationFunction(self.netInput, deriv)
 
 class NN:
     def __init__(self, *layers):
@@ -87,70 +84,15 @@ class NN:
         elif(value == "tanh"):
             print("tanh!1!")
             self.__activationFunction = tanh
+        for layer in self.layers:
+            layer._activationFunction = self.__activationFunction
 
-    def feedForward(self, inputs):
-        # if(len(inputs) != len(self.layers[0].activation)):
-            # raise ValueError("Passed in incorrect amount of inputs")
-        self.layers[0].activation = np.array([inputs],dtype=np.float64).T
-
-        for i in range(1,len(self.layers)):
-            layer = self.layers[i]
-            layer.netInput = np.dot(layer.weights,self.layers[i-1].activation)+layer.bias
-            layer.activation = self.activationFunction(layer.netInput)
-        return self.layers[-1].activation
-
-    def feedForwardM(self, input):
-        self.layers[0].activation = input.T
-
-        for i in range(1, len(self.layers)):
-            layer = self.layers[i]
-            layer.netInput = np.dot(layer.weights, self.layers[i-1].activation) + layer.bias
-            layer.activation = self.activationFunction(layer.netInput)
-        return self.layers[-1].activation[0]
-
-    def backprop(self, target):
-        target = np.array([target]).T
-        costPrime = self.cost(self.layers[-1].activation,target,True)
-        activationPrime = self.activationFunction(self.layers[-1].netInput,True)
-
-        #maybe use temp array instead of list
-        error = [costPrime*activationPrime]
-        for i in range(1,len(self.layers)):
-            layer = self.layers[-1-i]
-            nextLayer = self.layers[-i]
-            error.append(np.dot(nextLayer.weights.T,error[-1]) * self.activationFunction(layer.netInput,True))
-        return error
-
-    def backpropM(self, target):
-        target = target.T
-        costPrime = self.cost(self.layers[-1].activation, target, True)
-        activationPrime = self.activationFunction(self.layers[-1].netInput, True)
-        error = [costPrime * activationPrime]
-        # print("error",error[-1].shape)
-
-        for i in range(1, len(self.layers)):
-            layer = self.layers[-1-i]
-            nextLayer = self.layers[-i]
-            error.append((nextLayer.weights.T @ error[-1]) * self.activationFunction(layer.netInput, True))
-
-        return error
-
-    def updateParamsM(self, error):
+    def updateParams(self, error):
 
         for i in range(len(self.layers)-1):
             layer = self.layers[-1-i]
             layer.bias -= np.sum(error[i],axis=1).reshape(layer.bias.shape) * self.learningRate/error[i].shape[1]
             layer.weights -= np.dot(error[i],self.layers[-2-i].activation.T) * self.learningRate/error[i].shape[1]
-
-    def updateParams(self, error): #stochastic gradient descent
-        layerLen = len(self.layers)
-        if(layerLen is not len(error)): #TODO:len-1
-            raise ValueError("Incorrect error passed into sgd, not the same length as self.layers")
-
-        for i in range(layerLen-1): #back to front
-            layer = self.layers[-1-i]
-            # layer.bias -= error[i] * (self.learningRate)
-            layer.weights -= (error[i] * self.layers[-2-i].activation.T) * self.learningRate
 
     def gd(self, data): #gradient descent
         if(len(data.inputs) != len(data.outputs)):
@@ -159,31 +101,44 @@ class NN:
         self.feedForwardM(data.inputs)
         self.updateParamsM(self.backpropM(data.outputs))
 
+    def backprop(self, target):
+        error = [self.layers[-1].calcError(target)]
+
+        for i in range(1, len(self.layers)):
+            layer = self.layers[-1-i]
+            nextLayer = self.layers[-i]
+            error.append(layer.backprop(error[-1], nextLayer))
+
+        return error
+
+    def feedForward(self, inputs): #TODO: incorrect output for 1d input
+        self.layers[0].activation = inputs.T
+
+        for i in range(1, len(self.layers)):
+            self.layers[i].feedForward(self.layers[i-1])
+
+        return self.layers[-1].activation
+
     def train(self, data):
         for i in range(len(data.inputs)):
-            self.feedForward(data.inputs[i])
-            self.updateParams(self.backprop(data.outputs[i]))
+            self.newFeedForward(data.inputs[i])
+            self.updateParams(self.newBackprop(data.outputs[i]))
 
     def minibatch(self, data, batchSize=10):
         size = len(data.inputs)
-        # batch = np.random.permutation(size)
-        for i in range(size//batchSize):
-            # samples = batch[i*batchSize:(i+1)*batchSize]
-            # self.feedForwardM(data.inputs[samples])
-            self.feedForwardM(data.inputs[i*batchSize:(i+1)*batchSize])
-            # self.updateParamsM(self.backpropM(data.outputs[samples]))
-            self.updateParamsM(self.backpropM(data.outputs[i*batchSize:(i+1)*batchSize]))
 
-    def evaluate(self, inputs, answers): #evaluate error on a dataset
-        if(len(inputs) != len(answers)):
-            raise ValueError("Incorrect dataset input (inputs and answers are different length)")
-        count = 0
-        # print(len(inputs))
-        for i in range(len(inputs)):
-            output = self.feedForward(inputs[i])
-            # print(self.cost(output, answers[i]),output,answers[i])
-            count += self.cost(output, answers[i])
-        return (count/len(inputs))
+        for i in range(size//batchSize):
+            index = i*batchSize
+            self.feedForward(data.inputs[index:index+batchSize])
+            self.updateParams(self.backprop(data.outputs[index:index+batchSize]))
+
+    def evaluate(self, dataset): #evaluate error on a dataset
+
+        if(len(dataset.inputs) != len(dataset.outputs)):
+            raise ValueError("Incorrect dataset input (inputs and outputs are different length)")
+
+        output = self.feedForward(dataset.inputs).T
+        return self.cost(output,dataset.outputs)
 
     def test(self, data):
         inputs = data.inputs
