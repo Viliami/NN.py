@@ -26,35 +26,6 @@ def MSE(output, target, deriv=False):
         return output-target
     return ((target - output) ** 2).mean(axis=0)/2
 
-class Layer:
-    def __init__(self, nodes, prevNodes):
-        self.activation = np.random.random((nodes,1)) - 0.5
-        self.netInput = np.random.random((nodes,1)) - 0.5
-        self.bias = np.full((nodes,1), 0.1)
-        self._cost = MSE
-        self._activationFunction = relu
-
-        #connecting this layer to the previous layer
-        self.weights = np.random.random((nodes,prevNodes)) - 0.5
-
-    def feedForward(self, prevLayer):
-        self.netInput = np.dot(self.weights, prevLayer.activation) + self.bias
-        self.activation = self.activationFunction()
-
-    def backprop(self, error, nextLayer):
-        return np.dot(nextLayer.weights.T, error) * self.activationFunction(True)
-
-    def calcError(self, target): #calculate output layer error to backpropogate
-        costPrime = self.cost(target.T, True)
-        activationPrime = self.activationFunction(True)
-        return costPrime * activationPrime
-
-    def cost(self, target, deriv=False):
-        return self._cost(self.activation, target, deriv)
-
-    def activationFunction(self, deriv=False):
-        return self._activationFunction(self.netInput, deriv)
-
 class NN:
     def __init__(self, *layers):
         self.layers = [Layer(layers[0],0)]
@@ -153,34 +124,70 @@ class NN:
     def __len__(self):
         return len(self.layers)
 
-class CNN:
-    def __init__(self):
-        self.layers = []
-
-    def feedForward(self):
-        #for i in range(len(self.layers)):
-        #    self.layers[i].feedForward()
-        pass
-
-    def backprop(self):
-        pass
-
-class ConvolutionalLayer:
+class Layer:
     def __init__(self, nodes, prevNodes):
         self.activation = np.random.random((nodes,1)) - 0.5
         self.netInput = np.random.random((nodes,1)) - 0.5
         self.bias = np.full((nodes,1), 0.1)
+        self._cost = MSE
+        self._activationFunction = relu
+
         #connecting this layer to the previous layer
         self.weights = np.random.random((nodes,prevNodes)) - 0.5
 
+    def feedForward(self, prevLayer):
+        self.netInput = np.dot(self.weights, prevLayer.activation) + self.bias
+        self.activation = self.activationFunction() #TODO: rewrite activation member var out
+
+    def backprop(self, error, nextLayer):
+        return np.dot(nextLayer.weights.T, error) * self.activationFunction(True)
+
+    def calcError(self, target): #calculate output layer error to backpropogate
+        costPrime = self.cost(target.T, True)
+        activationPrime = self.activationFunction(True)
+        return costPrime * activationPrime
+
+    def cost(self, target, deriv=False):
+        return self._cost(self.activation, target, deriv)
+
+    def activationFunction(self, deriv=False):
+        return self._activationFunction(self.netInput, deriv)
+
+class CNN:
+    def __init__(self):
+        self.layers = [ConvolutionalLayer((28,28), (5,5))]
+
+    def addLayer(self, layer):
+        self.layers.append(layer)
+
+    def feedForward(self, inputs):
+        self.layers[0].map = inputs
+        for i in range(1,len(self.layers)):
+            self.layers[i].feedForward(self.layers[i-1]) 
+
+class ConvolutionalLayer: #2d matrix as input, 2d matrix as output
+    def __init__(self, size, filterSize):
+        self.map = None
+        self.filter = None
+
     def convolution(self, a, b):
-        pass
+        return signal.fftconvolve(a,b,mode="valid")
 
     def feedForward(self, prevLayer):
-        # self.activationFunction()
+        #TODO: handle multiple maps in a single layer
+        self.map = self.convolution(prevLayer.map, self.filter)
+
+    def backprop(self, error, nextLayer):
         pass
 
-    def backprop(self, error):
+class FlatteningLayer:
+    def __init__(self):
+        pass
+
+    def feedForward(self):
+        pass
+
+    def backprop(self, error, nextLayer):
         pass
 
 class PoolingLayer:
@@ -191,4 +198,8 @@ class PoolingLayer:
         pass
 
     def backprop(self, error):
+        pass
+
+class RELULayer:
+    def __init__(self):
         pass
