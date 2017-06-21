@@ -15,11 +15,16 @@ class Screen:
         self.font = pygame.font.SysFont("Arial",16)
         self.screen =pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption(title)
+        self.clock = pygame.time.Clock()
+        self.fps = 60
+
+    def setFPS(self, fps):
+        self.fps = fps
 
     def onUpdate(self):
         pass
 
-    def hEvents(self):
+    def hEvents(self):  
         self.onUpdate()
         for e in pygame.event.get():
             if(e.type == pygame.QUIT):
@@ -34,6 +39,7 @@ class Screen:
 
     def start(self):
         while self.hEvents():
+            self.clock.tick(self.fps)
             self.screen.fill(WHITE)
             for surface in self.surfaces:
                 # surface.fill(WHITE)
