@@ -1,5 +1,5 @@
-from graphics_qt import *
-#from graphics_pygame import *
+# from graphics_qt import *
+from graphics_pygame import *
 from NN import *
 import math
 

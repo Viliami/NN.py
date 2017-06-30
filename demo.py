@@ -47,7 +47,7 @@ def onUpdate():
         decay_steps += 20
     epoch += 1
     accuracy = nn.evaluate(testData)
-    print(epoch,nn.learningRate,accuracy)
+    print(epoch,nn.learningRate,accuracy[0])
     nn.minibatch(data,10)
     costGraph.plot(accuracy*30)
 screen.onUpdate = onUpdate

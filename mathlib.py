@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+<<<<<<< HEAD
 import timeit
 import math
 
@@ -11,6 +12,8 @@ def sigmoid(x):
 
 def sigmoidPrime(x):
     return x*(1 - x)
+=======
+>>>>>>> c5975a960a0c4424a6ae939dc54b00331c75d958
 
 class Vector:
     def __init__(self, *args):
@@ -229,6 +232,7 @@ class Matrix:
             for i in range(len(m.value)):
                 m.set(i, m[i]*other[i])
             return m
+<<<<<<< HEAD
 
     def __getitem__(self, key):
         return self.value[key]
@@ -383,3 +387,7 @@ def measure(code, samples=1):
 # print("Matrix:",result2,"per second -", str(int(result2/total*100))+"%")
 # print("Matrix2:",result3,"per second -", str(int(result3/total*100))+"%")
 # print("after",samples,"iterations each,",whoWins(result1,result2,result3),"wins")
+=======
+    def __getitem__(self, key):
+        return self.value[key]
+>>>>>>> c5975a960a0c4424a6ae939dc54b00331c75d958
