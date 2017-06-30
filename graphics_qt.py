@@ -49,7 +49,7 @@ class Surface(QPainter): #TODO: change to pixmap
         super().__init__()
         self.width, self.height = width,height
         self.x, self.y = 0,0
-
+        self.backgroundColor = WHITE
         self.qp = QPen()
         self.setPen(self.qp)
 
