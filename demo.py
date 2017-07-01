@@ -3,13 +3,13 @@ from NN import *
 from Data import *
 
 data = Data()
-# data.generateXORData(1000, 0.2)
-data.generateCircleData(500, 0.2)
+data.generateXORData(1000, 0.2)
+#data.generateCircleData(500, 0.2)
 data.shuffle()
 
 testData = Data()
-# testData.generateXORData(50, 0.2)
-testData.generateCircleData(50, 0.2)
+testData.generateXORData(50, 0.2)
+#testData.generateCircleData(50, 0.2)
 
 nn = NN(2,4,3,1)
 nn.activationFunction = "sigmoid"
@@ -35,6 +35,7 @@ costGraph = TimeSeries(200,200, np.linspace(0,10,10))
 costGraph.setBackgroundColor((240,240,240))
 screen.addSurface(costGraph, 500,0)
 
+
 epoch = 0
 nn.learningRate = 1
 decay_steps = 20
@@ -50,6 +51,7 @@ def onUpdate():
     print(epoch,nn.learningRate,accuracy[0])
     nn.minibatch(data,10)
     costGraph.plot(accuracy*30)
+
 screen.onUpdate = onUpdate
 
 screen.start()

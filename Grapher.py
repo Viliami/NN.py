@@ -9,6 +9,7 @@ class Graph2D(Surface):
         self.xAxis, self.yAxis = xAxis, yAxis
         self.showGrid = True
         self.points = []
+        self.xLabel, self.yLabel = "x","y"
 
     def toPixel(self, cX, cY): #coordinates to pixels
         cX -= self.xAxis[0]
@@ -39,6 +40,9 @@ class Graph2D(Surface):
 
     def plot(self, x, y, color, radius):
         self.points.append(((x,y),color,radius))
+
+    def plotFunction(self, func, color):
+        pass
 
 class TimeSeries(Graph2D):
     def __init__(self, width, height, yAxis):
@@ -126,7 +130,6 @@ class Structure(Surface):
                     screen.line((x,y), (x-x_delta,y_pad+(temp_y_delta//2)+int(temp_y_delta*k)), wcolor, weight)
                 y+=y_delta
             x += x_delta
-        # screen.text((0,0),"Network structure")
 
 class ImgArray(Surface):
     def __init__(self, width, height, array):
@@ -138,17 +141,6 @@ class ImgArray(Surface):
 
     def render(self):
         self.fill(self.backgroundColor)
-        # print(self.array.shape)
-        # y = 0
-        # for rows in self.array:
-        #     x = 0
-        #     for pixel in rows:
-        #         x += 1
-        #         self.rectangle((x,y),(1,1),(pixel,pixel,pixel))
-        #     y+=1
-
-        # self.imageArray(self.array)
-        # pygame.surfarray.blit_array(self.blittingSurface, self.array)
         self.blit(self.blittingSurface, (0,0))
 
     def toRGB(self):
