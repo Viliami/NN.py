@@ -10,6 +10,8 @@ class Graph2D(Surface):
         self.showGrid = True
         self.points = []
         self.xLabel, self.yLabel = "x","y"
+        self.xAxis = np.linspace(xAxis[0], xAxis[1], xAxis[2])
+        self.yAxis = np.linspace(yAxis[0], yAxis[1], yAxis[2])
 
     def toPixel(self, cX, cY): #coordinates to pixels
         cX -= self.xAxis[0]
@@ -41,12 +43,13 @@ class Graph2D(Surface):
     def plot(self, x, y, color, radius):
         self.points.append(((x,y),color,radius))
 
-    def plotFunction(self, func, color):
-        pass
+    def plotFunction(self, func, color, accuracy=100):
+        for x in self.xAxis:
+            self.points.append((x,func(x)),color,radius)
 
 class TimeSeries(Graph2D):
     def __init__(self, width, height, yAxis):
-        super().__init__(width, height, np.linspace(0,1,2), yAxis)
+        super().__init__(width, height, (0,1,2), yAxis)
         self.lines = 90
 
     def setBackgroundColor(self, color):

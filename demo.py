@@ -27,14 +27,13 @@ screen.addSurface(structure, 0, 0)
 
 #add 2d neural grid vizualisation
 axis = 10
-ngrid = NeuralGrid(200, 200, np.linspace(-axis,axis,axis*2), np.linspace(-axis,axis,axis*2), nn, data)
+ngrid = NeuralGrid(200, 200, (-axis,axis,axis*2), (-axis,axis,axis*2), nn, data)
 screen.addSurface(ngrid, 50, 300)
 
 #add time series visualisaiton
-costGraph = TimeSeries(200,200, np.linspace(0,10,10))
+costGraph = TimeSeries(200,200, (0,10,10))
 costGraph.setBackgroundColor((240,240,240))
 screen.addSurface(costGraph, 500,0)
-
 
 epoch = 0
 nn.learningRate = 1
