@@ -1,6 +1,7 @@
 # from graphics_qt import *
 from graphics_pygame import *
-from NN import *
+#from NN import *
+import numpy as np
 import math
 
 class Graph2D(Surface):
@@ -90,6 +91,32 @@ class NeuralGrid(Graph2D): #only possible if there are at least 2 input neurons 
         for x in self.xAxis:
             for y in self.yAxis:
                 c = min(255,max(0,a[counter]*255))
+                self.filledSquare(self.toPixel(x,y),11,(0,c,c))
+                counter+=1
+
+        if(self.data):
+            for i in range(len(self.data.inputs)):
+                x,y = self.data.inputs[i]
+                c = min(255, max(0, self.data.outputs[i,0] * 255))
+                self.renderPoint(((x,y),(0,c,c),3))
+
+class HeatMap(Graph2D):
+    def __init__(self, width, height, xAxis, yAxis, function = None,data=None):
+        super().__init__(width, height, xAxis, yAxis)
+        self.data = data
+        coord = []
+        for x in self.xAxis:
+            for y in self.yAxis:
+                coord.append(np.array([x,y]))
+        self.coordinates = np.array(coord)
+
+    def render(self):
+        self.fill(self.backgroundColor)
+        a = function(self.coordinates).T
+        counter = 0
+        for x in self.xAxis:
+            for y in self.yAxis:
+                c = min(255, max(0,a[counter]*255))
                 self.filledSquare(self.toPixel(x,y),11,(0,c,c))
                 counter+=1
 
