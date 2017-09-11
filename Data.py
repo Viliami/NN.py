@@ -1,59 +1,6 @@
 import random, csv, struct
 import numpy as np
-
-#TODO: load csv file
-
-class DataOld:
-    def __init__(self):
-        self.inputs = []
-        self.answers = [] #TODO: change to outputs
-
-    #generate n sample data at random points based on a custom function
-    def populate(self, func, samples,inputRange):
-        gridX = 10
-        gridY = 10
-        for i in range(samples):
-            inputs = []
-            for x in inputRange:
-                inputs.append(random.uniform(x[0],x[1]))
-
-            self.inputs.append(inputs)
-            self.answers.append([func(*inputs)])
-
-    def importCSV(self, file, inputRows, outputRows, descretionize = True): #TODO: make last 2 params optional
-        with open(file) as csvfile:
-            r = csv.reader(csvfile)
-            i = 0
-            for row in r:
-                if(i == 0):
-                    print(row)
-                    inputs = []
-                    outputs = []
-                    inputsName = dict()
-                    outputsName = dict()
-                    for j in range(len(row)):
-                        if row[j] in inputRows:
-                            print(row[j],"is a chosen row")
-                            inputs.append(j)
-                            inputsName[j] = row[j]
-                        elif row[j] in outputRows:
-                            outputs.append(j)
-                            outputsName[j]=row[j]
-                            print(row[j], "is a chosen row")
-                else:
-                    tinputs = []
-                    tanswers =[]
-                    for j in inputs:
-                        tinputs.append(row[j])
-                    for k in outputs:
-                        tanswers.append(row[k])
-                    if(len(tinputs) == len(inputRows)):
-                        self.inputs.append(tinputs)
-                        self.answers.append(tanswers)
-                i+=1
-
-    def normalize(self): #convert strings to number
-        pass
+import ujson
 
 class Data:
     def __init__(self):
@@ -84,13 +31,18 @@ class Data:
 
         self.outputs = np.array([self.vectorizeResult(i) for i in self.outputs]).reshape(len(self.outputs),10)
 
+    def save(self, filename):
+        f = open(filename,"w")
+        f.write(ujson.encode(self.inputs.tolist(), double_precision=-1))
+        f.write(ujson.encode(self.outputs.tolist(), double_precision=-1))
+        f.close()
+
     def vectorizeResult(self, i):
         e = np.zeros((10,1))
         e[i] = 1.0
         return e
 
-
-    def generateXORData(self, samples, noise):
+    def generateXORData(self, samples, noise=0):
         padding = 0.3
         inputs = []
         outputs = []
@@ -109,7 +61,7 @@ class Data:
         self.inputs = np.array(inputs)
         self.outputs = np.array(outputs)
 
-    def generateCircleData(self, samples, noise=0.1):
+    def generateCircleData(self, samples, noise=0):
         minimum = -10
         maximum = 10
         radius = 10
