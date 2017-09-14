@@ -1,5 +1,7 @@
 import numpy as np
 
+#TODO: confusion matrix
+
 # np.random.seed(1)
 def sigmoid(x,deriv=False):
     if(deriv):
@@ -22,18 +24,20 @@ def tanh(x, deriv=False):
 
 def MSE(output, target, deriv=False):
     if(deriv):
-        # return target-output
         return output-target
     return ((target - output) ** 2).mean(axis=0)/2
 
 class NN:
     def __init__(self, *layers):
+        self.nlayers = layers
         self.layers = [Layer(layers[0],0)]
         for i in range(1,len(layers)):
             self.layers.append(Layer(layers[i],layers[i-1]))
         self.__learningRate = 0.03 #arbitrary default learning rate
         self.__activationFunction = sigmoid
         self.cost = MSE
+        self.momentum = 0
+        self.prevUpdate = [[0,0] for layer in self.layers]
 
     @property
     def learningRate(self): return self.__learningRate
@@ -59,18 +63,13 @@ class NN:
             layer._activationFunction = self.__activationFunction
 
     def updateParams(self, error):
-
         for i in range(len(self.layers)-1):
             layer = self.layers[-1-i]
-            layer.bias -= np.sum(error[i],axis=1).reshape(layer.bias.shape) * self.learningRate/error[i].shape[1]
-            layer.weights -= np.dot(error[i],self.layers[-2-i].activation.T) * self.learningRate/error[i].shape[1]
-
-    def gd(self, data): #gradient descent
-        if(len(data.inputs) != len(data.outputs)):
-            raise ValueError("Incorrect dataset input (inputs and outputs are different length)")
-
-        self.feedForwardM(data.inputs)
-        self.updateParamsM(self.backpropM(data.outputs))
+            a = np.sum(error[i],axis=1).reshape(layer.bias.shape) * self.learningRate/error[i].shape[1]
+            b = np.dot(error[i],self.layers[-2-i].activation.T) * self.learningRate/error[i].shape[1]
+            layer.bias -= a + (self.momentum*self.prevUpdate[i][0])
+            layer.weights -= b + (self.momentum*self.prevUpdate[i][1])
+            self.prevUpdate[i] = [a,b]
 
     def backprop(self, target):
         error = [self.layers[-1].calcError(target)]
@@ -91,17 +90,23 @@ class NN:
         return self.layers[-1].activation
 
     def train(self, data):
-        for i in range(len(data.inputs)):
-            self.newFeedForward(data.inputs[i])
-            self.updateParams(self.newBackprop(data.outputs[i]))
+        self.updateParams(self.backprop(data.outputs))
+        '''for i in range(len(data.inputs)):
+            self.feedForward(data.inputs[i])
+            self.updateParams(self.backprop(data.outputs[i]))'''
 
-    def minibatch(self, data, batchSize=10):
+    def minibatch(self, data, batchSize=10,momentum=False): #minibatch training on dataset sample
         size = len(data.inputs)
-
+        if(size//batchSize == 0):
+            raise ValueError("Batch size can't be greater than dataset size")
         for i in range(size//batchSize):
             index = i*batchSize
             self.feedForward(data.inputs[index:index+batchSize])
             self.updateParams(self.backprop(data.outputs[index:index+batchSize]))
+
+    def batchTrain(self, data): #batch training on full dataset
+        self.feedForward(data.inputs)
+        self.updateParams(self.backprop(data.outputs))
 
     def evaluate(self, dataset): #evaluate error on a dataset
 
@@ -120,6 +125,26 @@ class NN:
             if(np.argmax(outputs[i]) == np.argmax(output)):
                 numCorrect += 1
         return numCorrect,len(inputs),str(numCorrect/len(inputs)*100)+"%"
+
+    def createCopy(self):
+        copy = self.__class__(*self.nlayers)
+        copy.learningRate = self.learningRate
+        copy.__activationFunction = self.__activationFunction
+        copy.momentum = self.momentum
+        for i in range(len(copy.layers)):
+            np.copyto(copy.layers[i].weights,self.layers[i].weights)
+            np.copyto(copy.layers[i].bias,self.layers[i].bias)
+            copy.layers[i]._activationFunction = self.layers[i]._activationFunction
+        return copy
+
+    def save(self, filename):
+        pass
+
+    def load(self, filename):
+        pass
+
+    def prune(self, test):
+        pass
 
     def __len__(self):
         return len(self.layers)
@@ -145,6 +170,7 @@ class Layer:
     def calcError(self, target): #calculate output layer error to backpropogate
         costPrime = self.cost(target.T, True)
         activationPrime = self.activationFunction(True)
+        #print("dl_dout",costPrime)
         return costPrime * activationPrime
 
     def cost(self, target, deriv=False):
