@@ -54,10 +54,8 @@ class NN:
         if(value == "sigmoid"):
             self.__activationFunction = sigmoid
         elif(value == "relu"):
-            print("set activation function to relu")
             self.__activationFunction = relu
         elif(value == "tanh"):
-            print("tanh!1!")
             self.__activationFunction = tanh
         for layer in self.layers:
             layer._activationFunction = self.__activationFunction
@@ -170,7 +168,6 @@ class Layer:
     def calcError(self, target): #calculate output layer error to backpropogate
         costPrime = self.cost(target.T, True)
         activationPrime = self.activationFunction(True)
-        #print("dl_dout",costPrime)
         return costPrime * activationPrime
 
     def cost(self, target, deriv=False):
