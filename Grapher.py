@@ -55,7 +55,9 @@ class Graph2D(Surface):
 class TimeSeries(Graph2D):
     def __init__(self, width, height, yAxis):
         super().__init__(width, height, (0,1,2), yAxis)
-        self.lines = 90
+        #self.lines = 90
+        self.POINT_LIMIT = 100
+        self.offsetX = 0
 
     def setBackgroundColor(self, color):
         print(self.backgroundColor)
@@ -68,12 +70,21 @@ class TimeSeries(Graph2D):
 
     def render(self):
         self.fill(self.backgroundColor)
-        step =int(len(self.points)/self.lines)+1
+        '''step =int(len(self.points)/self.lines)+1
         for i in range(step,len(self.points),step):
-            self.renderLine(self.points[i-step], self.points[i])
+            self.renderLine(self.points[i-step], self.points[i])'''
+
+        for i in range(1,len(self.points)):
+            self.renderLine(self.points[i-1],self.points[i])
+
+    def renderLine(self, point, point2):
+        self.line(self.toPixel(point[0][0]-self.offsetX,point[0][1]), self.toPixel(point2[0][0]-self.offsetX,point2[0][1]), BLACK, 2)
 
     def plot(self, y):
         x = len(self.xAxis)+1
+        if(len(self.points)+1 > self.POINT_LIMIT):
+            self.points.pop(0)
+            self.offsetX += 1
         self.xAxis = np.append(self.xAxis,len(self.xAxis)+1)
         self.points.append(((x,y), (255,0,0), 3))
 
@@ -116,7 +127,6 @@ class Grid(Graph2D):
         self.steps = 129
         self.colors = list(Color("red").range_to(Color("blue"),self.steps))
         self.offset = 70
-        #self.path = [(10,10),(25,10),(100,50),(150,100)]
         self.path = []
         self.points = [(150,110)]
 
@@ -146,7 +156,6 @@ class Grid(Graph2D):
             for x in self.xAxis:
                 c = a[int(x)][int(y)]*(((self.steps-1)//2)/amax)
                 col = self.colors[int(c)].rgb
-                #self.filledSquare(self.toPixel(x+offset,y+offset),width,(col[0]*255,col[1]*255,col[2]*255),(col[0]*255,col[1]*255,col[2]*255))
                 self.filledSquare(self.axisToPixel(x,y),width,(col[0]*255,col[1]*255,col[2]*255),(col[0]*255,col[1]*255,col[2]*255))
                 counter+=1
 
