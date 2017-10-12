@@ -1,6 +1,5 @@
 import numpy as np
 import copy
-<<<<<<< HEAD
 import timeit
 import math
 
@@ -12,8 +11,6 @@ def sigmoid(x):
 
 def sigmoidPrime(x):
     return x*(1 - x)
-=======
->>>>>>> c5975a960a0c4424a6ae939dc54b00331c75d958
 
 class Vector:
     def __init__(self, *args):
@@ -232,7 +229,6 @@ class Matrix:
             for i in range(len(m.value)):
                 m.set(i, m[i]*other[i])
             return m
-<<<<<<< HEAD
 
     def __getitem__(self, key):
         return self.value[key]
@@ -316,78 +312,3 @@ class Vector2:
 
     def __str__(self):
         return str(self.value)
-
-def measure(code, samples=1):
-    timer = timeit.Timer(code, "import numpy; from __main__ import test, test2, test3")
-    result = timer.repeat(samples, 1)
-    return sum(result)/samples
-
-# def whoWins(one,two,three=-999999):
-#     win = two
-#     win1 = "Matrix"
-#     if(max(one,two) is one):
-#         win = one
-#         win1 = "numpy"
-#
-#     if(max(win,three) is three):
-#         win = three
-#         win1 = "Matrix2"
-#     return win1
-#
-# samples = 100
-# dimensions = (2,2)
-# a = np.random.rand(*dimensions)
-#
-# print(a)
-# print(sigmoidNew(a))
-# b = np.random.rand(*dimensions)
-#
-# nv1 = np.random.rand(dimensions[0])
-# nv2 = np.random.rand(dimensions[0])
-#
-# a1 = Matrix(*dimensions)
-# b1 = Matrix(*dimensions)
-#
-# a2 = Matrix2(dimensions)
-# b2 = Matrix2(dimensions)
-#
-# v1 = Vector(*[1]*dimensions[0])
-# v2 = Vector(*[1]*dimensions[0])
-#
-# v3 = Vector2(*[1]*dimensions[0])
-# v4 = Vector2(*[1]*dimensions[0])
-#
-# grid = np.meshgrid(a,sparse=True)
-# def test():
-#     # b = copy.deepcopy(a)
-#     sigmoidNew(a)
-#     # pass
-#
-# def test2():
-#     a1.apply(sigmoid)
-#     # a1*b1
-#
-# def test3():
-#     # b = copy.deepcopy(a2)
-#     # a2*b2
-#     a2.apply(sigmoidNew)
-#     # pass
-#
-# result1 = 1/measure("test()",samples)
-# result2 = 1/measure("test2()",samples)
-# result3 = 1/measure("test3()",samples)
-#
-# rounded = True
-# total = result1+result2+result3
-# if(rounded):
-#     result1 = int(result1)
-#     result2 = int(result2)
-#     result3 = int(result3)
-# print("numpy:",result1,"per second -", str(int(result1/total*100))+"%")
-# print("Matrix:",result2,"per second -", str(int(result2/total*100))+"%")
-# print("Matrix2:",result3,"per second -", str(int(result3/total*100))+"%")
-# print("after",samples,"iterations each,",whoWins(result1,result2,result3),"wins")
-=======
-    def __getitem__(self, key):
-        return self.value[key]
->>>>>>> c5975a960a0c4424a6ae939dc54b00331c75d958
