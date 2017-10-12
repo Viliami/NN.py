@@ -153,16 +153,12 @@ class Grid(Graph2D):
         #draw axis labels
         for y in self.yAxis:
             if(y%25 == 0):
-                #self.text(self.toPixel(3,y+offset-5),str(int(y)),color=(255,0,0))
                 self.text(self.axisToPixel(-20,y-5),str(int(y)))
-                #self.line(self.toPixel(offset*(3/4),y),self.toPixel(offset,y),color=(255,0,0))
                 self.line(self.axisToPixel(-5,y),self.axisToPixel(0,y))
 
         for x in self.xAxis:
             if(x%25 == 0):
-                #self.text(self.toPixel(x+offset-5,5),str(int(x)))
                 self.text(self.axisToPixel(x-5,-15),str(int(x)))
-                #self.line(self.toPixel(x,offset*(3/4)),self.toPixel(x,offset),width=3)
                 self.line(self.axisToPixel(x,-5),self.axisToPixel(x,0))
 
         #draw border
@@ -171,19 +167,17 @@ class Grid(Graph2D):
         self.line((1,0),(1,self.height),width=3)
         self.line((0,self.height-1),(self.width,self.height-1),width=3)'''
 
-        #self.drawScatter(self.points)
+        self.drawScatter(self.points)
         self.drawPath(self.path)
 
     def drawPath(self, path):
         prevPoint = path[0]
         circleColor = (100,255,0)
-        lineColor = (0,255,0)
         lineColor = (0,0,0)
         color = (0,255,0)
-        lastPoint = path[-1]
-        for point in path:
-            if(point is lastPoint):
-                break
+
+        for i in range(len(path)-1):
+            point = path[i]
             x,y = point
             x2,y2 = prevPoint
             self.line(self.axisToPixel(x,y),self.axisToPixel(x2,y2),lineColor,width=4)
@@ -191,28 +185,20 @@ class Grid(Graph2D):
             prevPoint = point
 
         #draw arrowhead for last point
-        lastPoint = path[-1]
-        lx,ly = lastPoint
-        secondLastPoint = path[-2]
-        l2x,l2y = secondLastPoint
-        l = np.array([lx,ly])
+        height = 7
+        width = 3.5
+        lastPoint = np.array(path[-1])
+        secondLastPoint = np.array(path[-2])
 
-        h = 7
-        w = 0.8
+        direction = lastPoint-secondLastPoint
+        direction /= np.linalg.norm(direction)
 
-        dx = lx-l2x
-        dy = ly-l2y
-        gradient = dx/dy
-        length = math.sqrt(dx**2 + dy**2)
-        dir = np.array([dx/length,dy/length])
-        qx = dy
-        qy = -dx
-        q = np.array([qx,qy])
-        left = self.axisToPixel(*(l-(h*dir)+(w*q/2.0)))
-        right = self.axisToPixel(*(l-(h*dir)-(w*q/2.0)))
-        l = self.axisToPixel(*l)
-        self.polygon([left,l,right])
-        self.polygon([left,l,right],color,1)
+        q = np.array([direction[1],-direction[0]]) #rotate
+        left = self.axisToPixel(*(lastPoint-(height*direction)+(width*q/2.0)))
+        right = self.axisToPixel(*(lastPoint-(height*direction)-(width*q/2.0)))
+        lastPoint = self.axisToPixel(*lastPoint)
+        self.polygon([left,lastPoint,right])
+        self.polygon([left,lastPoint,right],color,1)
 
     def drawScatter(self, points):
         for point in points:
