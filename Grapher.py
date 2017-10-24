@@ -70,9 +70,6 @@ class TimeSeries(Graph2D):
 
     def render(self):
         self.fill(self.backgroundColor)
-        '''step =int(len(self.points)/self.lines)+1
-        for i in range(step,len(self.points),step):
-            self.renderLine(self.points[i-step], self.points[i])'''
 
         for i in range(1,len(self.points)):
             self.renderLine(self.points[i-1],self.points[i])
@@ -98,22 +95,38 @@ class NeuralGrid(Graph2D): #only possible if there are at least 2 input neurons 
             for y in self.yAxis:
                 coord.append(np.array([x,y]))
         self.coordinates = np.array(coord)
+        print("CO",self.coordinates.shape)
+        self.steps = 300
+        self.colors = list(Color("red").range_to(Color("blue"),self.steps))
+
+    def axisToPixel(self, cX, cY):
+        cX -= self.xAxis[0]
+        cY -= self.yAxis[0]
+        w,h = self.width, self.height
+        xRatio = w/len(self.xAxis)
+        yRatio = h/len(self.yAxis)
+        return (int(cX*xRatio), int(cY*yRatio))
 
     def render(self):
         self.fill(self.backgroundColor)
         a = self.nn.feedForward(self.coordinates).T
         counter = 0
-        for x in self.xAxis:
-            for y in self.yAxis:
-                c = min(255,max(0,a[counter]*255))
-                self.filledSquare(self.toPixel(x,y),11,(0,c,c))
+        width = self.width//len(self.xAxis)*2
+        amax = np.amax(a)
+
+        for y in self.yAxis:
+            for x in self.xAxis:
+                c = a[counter]*(((self.steps-1)//2)/amax)
+                col = self.colors[int(c)].rgb
+                self.filledSquare(self.toPixel(x,y),width,(col[0]*255,col[1]*255,col[2]*255),(col[0]*255,col[1]*255,col[2]*255))
                 counter+=1
 
         if(self.data):
             for i in range(len(self.data.inputs)):
                 x,y = self.data.inputs[i]
-                c = min(255, max(0, self.data.outputs[i,0] * 255))
-                self.renderPoint(((x,y),(0,c,c),3))
+                c = self.data.outputs[i,0]*(((self.steps-1)//2)/amax)
+                col = self.colors[int(c)].rgb
+                self.renderPoint(((x,y),(col[0]*255,col[1]*255,col[2]*255),3))
 
 class Grid(Graph2D):
     def __init__(self, width, height, xAxis, yAxis, data=None):
