@@ -12,4 +12,8 @@ Neural Network lib in Python
 
 **graphics_qt.py**       - QT Graphics Class
 
+
+## Install Dependencies
+    pip install -r requirements.txt
+
 ![View](view.gif)
