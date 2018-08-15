@@ -4,12 +4,9 @@ from Data import *
 
 data = Data()
 data.generateXORData(1000, 0.2)
-#data.generateCircleData(500, 0.2)
-data.shuffle()
 
 testData = Data()
 testData.generateXORData(50, 0.2)
-#testData.generateCircleData(50, 0.2)
 
 nn = NN(2,4,3,1)
 nn.activationFunction = "sigmoid"
@@ -41,7 +38,6 @@ decay_steps = 20
 
 def onUpdate():
     global epoch,decay_steps
-    # nn.learningRate -= 0.007 * nn.learningRate
     nn.learningRate *= 0.96**(epoch//decay_steps)
     if(epoch//decay_steps):
         decay_steps += 20
