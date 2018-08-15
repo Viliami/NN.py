@@ -12,9 +12,6 @@ nn = NN(2,4,3,1)
 nn.activationFunction = "sigmoid"
 nn.learningRate = 0.03
 
-cnn = CNN()
-cnn.feedForward([1,2])
-
 SCREEN_WIDTH, SCREEN_HEIGHT = (900,600)
 screen = Screen(SCREEN_WIDTH,SCREEN_HEIGHT,"Test")
 
