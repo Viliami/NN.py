@@ -28,7 +28,7 @@ nn = NN(2,4,3,1) #2 input neurons, 4 neurons in first hidden layer, 3 in second 
 nn.activationFunction = "sigmoid" #use the sigmoid function as the activation function
 nn.learningRate = 0.03
     
-for i in range(100):
+for i in range(100): #100 epochs of training
     accuracy = nn.evaluate(testData)
     print(accuracy)
     nn.minibatch(data,10) #train model with minibatches of 10
