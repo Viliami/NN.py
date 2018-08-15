@@ -1,6 +1,5 @@
-compulsory:
-- numpy
-
-optional:
-- pygame
-- qt
+numpy
+pygame
+pyqt5
+ujson
+Color
