@@ -11,3 +11,5 @@ Neural Network lib in Python
 **graphics_pygame.py**   - Pygame Graphics Class
 
 **graphics_qt.py**       - QT Graphics Class
+
+![View](view.gif)
