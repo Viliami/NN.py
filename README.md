@@ -21,8 +21,11 @@ Neural Network lib in Python
 from NN import *
 from Data import *
 
+data = Data()
+data.generateXORData(1000, 0.2)  #generate XOR dataset with 1000 points
+
 testData = Data()
-testData.generateXORData(50, 0.2) #generate new XOR dataset with 50 points
+testData.generateXORData(50, 0.2) #generate another XOR dataset with 50 points, this will be used for validation
 
 nn = NN(2,4,3,1) #2 input neurons, 4 neurons in first hidden layer, 3 in second hidden layer and 1 in output layer
 nn.activationFunction = "sigmoid" #use the sigmoid function as the activation function
