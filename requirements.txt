@@ -2,4 +2,4 @@ numpy
 pygame
 pyqt5
 ujson
-Color
+colour
