@@ -113,8 +113,11 @@ class NeuralGrid(Graph2D): #only possible if there are at least 2 input neurons 
         counter = 0
         width = self.width//len(self.xAxis)*2
         amax = np.amax(a)
+        if(amax < 1):
+            amax = 1
 
         for y in self.yAxis:
+        
             for x in self.xAxis:
                 c = a[counter]*(((self.steps-1)//2)/amax)
                 col = self.colors[int(c)].rgb
@@ -127,6 +130,9 @@ class NeuralGrid(Graph2D): #only possible if there are at least 2 input neurons 
                 c = self.data.outputs[i,0]*(((self.steps-1)//2)/amax)
                 col = self.colors[int(c)].rgb
                 self.renderPoint(((x,y),(col[0]*255,col[1]*255,col[2]*255),3))
+                
+    def generateColor(self): #TODO
+        pass
 
 class Grid(Graph2D):
     def __init__(self, width, height, xAxis, yAxis, data=None):
